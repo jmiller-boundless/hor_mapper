@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: gov.hor.approp.GrantmapperApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 50.113 sec - in gov.hor.approp.GrantmapperApplicationTests

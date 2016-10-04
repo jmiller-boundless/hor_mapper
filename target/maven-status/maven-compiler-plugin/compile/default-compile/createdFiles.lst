@@ -1,0 +1,15 @@
+gov\hor\approp\GrantmapperApplication.class
+gov\hor\approp\model\State.class
+com\bedatadriven\jackson\datatype\jts\JtsModule.class
+com\bedatadriven\jackson\datatype\jts\GeoJson.class
+gov\hor\approp\model\Award.class
+gov\hor\approp\model\Bureau.class
+gov\hor\approp\model\Program.class
+gov\hor\approp\model\Agency.class
+com\bedatadriven\jackson\datatype\jts\GeometryDeserializer.class
+com\bedatadriven\jackson\datatype\jts\GeometrySerializer.class
+gov\hor\approp\controller\FormController.class
+gov\hor\approp\model\Member.class
+gov\hor\approp\model\dao\FormFieldsDAO.class
+gov\hor\approp\model\Subcommittee.class
+gov\hor\approp\model\Congress.class
