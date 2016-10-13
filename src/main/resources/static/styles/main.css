@@ -1,0 +1,130 @@
+body {
+  overflow: hidden;
+}
+
+.logo {
+  background: url(../Seal_of_the_United_States_Congress.svg.png);
+  background-size: 40px 40px;
+  height: 40px;
+  width: 40px;
+  float: left;
+  margin: 5px 0 5px 10px;
+}
+
+.typeahead-demo .custom-popup-wrapper {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  background-color: #f9f9f9;
+}
+
+.typeahead-demo .custom-popup-wrapper > .message {
+  padding: 10px 20px;
+  border-bottom: 1px solid #ddd;
+  color: #868686;
+}
+
+.typeahead-demo .custom-popup-wrapper > .dropdown-menu {
+  position: static;
+  float: none;
+  display: block;
+  min-width: 160px;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.map {
+  height: calc(100vh - 350px);
+  width: calc(100vw - 250px);
+  z-index: 10;
+}
+
+.loading {
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map.loading {
+  position: absolute;
+  left: 0;
+  top: 50px;
+  background: rgba(0,0,0,0.3);
+}
+
+.tools .loading {
+  height: 300px;
+  width: 230px;
+}
+
+.main {
+  margin-top: 30px;
+  overflow: hidden;
+}
+
+.buttons {
+  float: right;
+}
+
+.filters {
+  padding: 0 20px 20px 20px;
+  width: 100%;
+  height: 300px;
+  border-top: 2px solid #bdbdbd;
+}
+
+#yearSelect {
+  max-width: 200px;
+}
+
+#subcommitteeSelect {
+  max-width: 200px;
+}
+
+.filter-container {
+  display: flex;
+}
+
+.form-group {
+  padding: 0 10px 0 10px;
+}
+
+#year-group {
+  flex: 1;
+  max-width: 80px;
+}
+
+#subcommittee-group {
+  flex: 1;
+  max-width: 150px;
+}
+
+#agency-group {
+  flex: 2;
+}
+
+#bureau-group {
+ flex: 2;
+}
+
+#program-group {
+  flex: 3;
+}
+
+.tools {
+  position: absolute;
+  right: 0;
+  top: 50px;
+  width: 250px;
+  height: calc(100vh - 350px);
+  z-index: 1;
+  background-color: white;
+  padding: 10px 10px 10px 10px;
+  overflow: auto;
+  border-left: 2px solid #bdbdbd;
+}
