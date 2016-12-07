@@ -10,7 +10,7 @@
         };
 
 	  var wmsSource = new ol.source.ImageWMS({
-		  url: 'http://ec2-54-164-142-147.compute-1.amazonaws.com:8080/geoserver/opengeo/wms',
+		  url: 'http://ec2-54-162-23-31.compute-1.amazonaws.com:8080/geoserver/opengeo/wms',
           params: paramv,
 		  serverType: 'geoserver',
 		  crossOrigin: ''
@@ -145,14 +145,14 @@
     }
     
     $scope.buildCSVReq = function(){
-    	var base = "http://ec2-54-164-142-147.compute-1.amazonaws.com:8080/geoserver/opengeo/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=opengeo%3Acdspending" +
+    	var base = "http://ec2-54-162-23-31.compute-1.amazonaws.com:8080/geoserver/opengeo/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=opengeo%3Acdspending" +
     			"&propertyName=fiscal_year,sum,firstname,middlename,lastname,party,subcommittee,start_date,end_date,statefp,cdfp,state,namelsad,cdsessn&outputformat=csv&viewparams=";
     	var out = base + paramv.viewparams;
     	window.open(out);
     }
     
     $scope.buildCSV = function(){
-    	var base = "http://ec2-54-164-142-147.compute-1.amazonaws.com/grantmapper-0.1/form/downloadCSV/";
+    	var base = "http://ec2-54-162-23-31.compute-1.amazonaws.com/grantmapper-0.1/form/downloadCSV/";
     	var out = base + $scope.data.year;
     	window.open(out);
     }

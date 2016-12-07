@@ -59,8 +59,8 @@ public class FormController {
 
     @RequestMapping(value = "/members", method = RequestMethod.GET)
     public @ResponseBody List<Member> getMembers(@RequestParam String partial,
-            @RequestParam Integer congress) {
-        List<Member> subs = repo.getMemberAutoComplete(partial, congress);
+            @RequestParam Integer congress, @RequestParam String state) {
+        List<Member> subs = repo.getMemberAutoComplete(partial, congress, state);
         return subs;
     }
 

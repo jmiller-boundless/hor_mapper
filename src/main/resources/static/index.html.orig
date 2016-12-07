@@ -1,0 +1,278 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <script src="./bower_components/openlayers3/build/ol.js"></script>
+    <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+<!--     <script type="text/javascript" src="./bower_components/angular-openlayers-directive/dist/angular-openlayers-directive.js"></script> -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.js"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.2.js"></script>
+    <script type="text/javascript" src="./app/app.js"></script>
+    <script type="text/javascript" src="./app/controllers.js"></script>
+    <script type="text/javascript" src="./app/services.js"></script>
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.15.1/css/ol.css" type="text/css">
+    <style>
+      .map {
+        height: 400px;
+        width: 100%;
+      }
+    </style>
+    <script src="http://openlayers.org/en/v3.15.1/build/ol.js" type="text/javascript"></script>
+
+
+    <link rel="stylesheet" href="./bower_components/bootstrap-css-only/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./bower_components/openlayers3/build/ol.css" />
+    
+    <style>
+  .typeahead-demo .custom-popup-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    background-color: #f9f9f9;
+  }
+
+  .typeahead-demo .custom-popup-wrapper > .message {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #868686;
+  }
+
+  .typeahead-demo .custom-popup-wrapper > .dropdown-menu {
+    position: static;
+    float: none;
+    display: block;
+    min-width: 160px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  #info{
+    width:100%;
+  }
+    #infof{
+    width:100%;
+  }
+</style>
+
+<script type="text/ng-template" id="customTemplate.html">
+  <a>
+      <img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
+      <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+  </a>
+</script>
+
+<script type="text/ng-template" id="customPopupTemplate.html">
+  <div class="custom-popup-wrapper"
+     ng-style="{top: position().top+'px', left: position().left+'px'}"
+     style="display: block;"
+     ng-show="isOpen() && !moveInProgress"
+     aria-hidden="{{!isOpen()}}">
+    <p class="message">select location from drop down.</p>
+
+    <ul class="dropdown-menu" role="listbox">
+        <li ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }"
+            ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
+            <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+        </li>
+    </ul>
+  </div>
+</script>
+    
+
+  </head>
+  <body ng-app="myApp">
+    <!--<openlayers ol-center="cairo" width="100%" height="400px"></openlayers>-->
+    <div id="map" class="map"></div>
+
+
+    <div class="container" ng-controller="AppController">
+    <pre>Year: {{data.year}} Agency: {{data.agencySelect}} Bureau: {{data.bureauSelect}} Subcommittee:{{data.subcommitteeSelect}} Program: {{data.programSelect}} </pre>
+        <label for="yearSelect"> Year: </label>
+        <select multiple name="yearSelect" id="yearSelect" ng-model="data.year">
+            <option ng-repeat="year in years" value="{{year}}">{{year}}</option>
+        </select>
+        <label for="subcommitteeSelect"> Subcommittee: </label>
+        <select multiple name="subcommitteeSelect" id="subcommitteeSelect" ng-model="data.subcommitteeSelect" ng-change="subcommitteeUpdate()">
+            <option ng-repeat="subcommittee in subcommittees" value="{{subcommittee.subcommittee}}">{{subcommittee.subcommittee}}</option>
+        </select>
+        <label  for="agencySelect"> Agency: </label>
+        <select multiple name="agencySelect" id="agencySelect" ng-model="data.agencySelect" ng-change="agencyUpdate()">
+            <option ng-repeat="agency in agencies" value="{{agency.agencyCode}}">{{agency.agencyName}}</option>
+        </select>
+        <label  for="bureauSelect"> Bureau: </label>
+        <select multiple name="bureauSelect" id="bureauSelect" ng-model="data.bureauSelect" ng-change="bureauUpdate()">
+            <option ng-repeat="bureau in bureaus" value="{{bureau.bureauCode}}">{{bureau.bureauName}}</option>
+        </select>
+        <label for="programSelect"> Program: </label>
+        <select multiple name="programSelect" id="programSelect" ng-model="data.programSelect">
+            <option ng-repeat="program in programs" value="{{program.cfda}}">{{program.title}}</option>
+        </select>
+        
+ 
+<!--      <input type="text" ng-model="asyncSelected2" placeholder="Programs" uib-typeahead="program.title for program in getLocation2($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" typeahead-on-select="onSelect2($item, $model, $label)" class="form-control">
+    <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+    <div ng-show="noResults">
+      <i class="glyphicon glyphicon-remove"></i> No Results Found
+    </div> -->
+        <button type="submit" ng-click="buildParam();">Filter</button>
+        <img src="ajax-loader.gif" id="loading" style="display:none"></img>
+        <button type="submit" ng-click="buildCSVReq();">Export CSV Based On Filter</button>
+        <button type="submit" ng-click="buildCSV();">Export CSV Bases Only On Years</button>
+        <br/>
+        <br/>
+        <pre>-------End Filter---------------</pre>
+        <label for="stateSelect"> State: </label>
+        <select name="stateSelect" id="stateSelect" ng-model="data.stateSelect" ng-change="statezoom()">
+            <option ng-repeat="state in states" value="{{state.geom}}">{{state.name}}</option>
+        </select>
+        
+        <label for="congressSelect"> Congress: </label>
+        <select name="congressSelect" id="congressSelect" ng-model="cs">
+            <option ng-repeat="congress in congresses" value="{{congress.congress}}">{{congress.congress}}</option>
+        </select>       
+        
+  <input type="text" ng-model="asyncSelected" placeholder="Members" uib-typeahead="address.lastname+', '+address.firstname for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" typeahead-on-select="onSelect($item, $model, $label)" class="form-control">
+    <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+    <div ng-show="noResults">
+      <i class="glyphicon glyphicon-remove"></i> No Results Found
+    </div>
+    
+
+<div id="info"></div>
+</div>
+
+  </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>HAL</title>
+    <link rel="stylesheet" href="./bower_components/bootstrap-css-only/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./bower_components/openlayers3/build/ol.css" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  <a>
+      <img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
+      <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+  </a>
+</script>
+
+<script type="text/ng-template" id="customPopupTemplate.html">
+  <div class="custom-popup-wrapper"
+     ng-style="{top: position().top+'px', left: position().left+'px'}"
+     style="display: block;"
+     ng-show="isOpen() && !moveInProgress"
+     aria-hidden="{{!isOpen()}}">
+    <p class="message">select location from drop down.</p>
+
+    <ul class="dropdown-menu" role="listbox">
+        <li ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }"
+            ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
+            <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+        </li>
+    </ul>
+  </div>
+</script>
+    
+
+  </head>
+  <body ng-app="myApp">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-header">
+          <div class="logo"></div>
+          <a class="navbar-brand" href="#">HAL</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+        </div><!--/.nav-collapse -->
+    </nav>
+    <div class="main" ng-controller="AppController">
+      <div id="map" class="map"></div>
+      <div class="map loading" ng-if="wmsLoading">
+        <img src="./ajax-loader.gif" alt="Loading...">
+      </div>
+
+      <div class="tools">
+        <h4>Zoom to District</h4>
+        <form>
+          <div class="form-group">
+            <label for="congressSelect">Congress</label>
+            <select class="form-control" name="congressSelect" id="congressSelect" ng-model="cs">
+                <option ng-repeat="congress in congresses" value="{{congress.congress}}">{{congress.congress}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+          <label>Name</label>
+            <input type="text" ng-model="asyncSelected" placeholder="Members" uib-typeahead="address.lastname+', '+address.firstname for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" typeahead-on-select="onSelect($item, $model, $label)" class="form-control">
+          </div>
+        </form>
+        <h4>District Information</h4>
+        <div class="loading" ng-if="loadingFeatureInfo">
+          <img src="./ajax-loader.gif" alt="Loading...">
+        </div>
+        <div ng-repeat="(key,value) in featureInfo">
+          <h6>{{key}}</h6>
+          {{value}}
+        </div>
+      </div>
+
+      <div class="filters">
+        <h2>Data Filters</h2>
+        <div class="filter-container">
+          <div class="form-group" id="year-group">
+            <label for="yearSelect">Year</label>
+            <select multiple name="yearSelect" class="form-control" id="yearSelect" ng-model="data.year">
+                <option ng-repeat="year in years" value="{{year}}">{{year}}</option>
+            </select>
+          </div>
+          <div class="form-group" id="subcommittee-group">
+            <label for="subcommitteeSelect">Subcommittee</label>
+            <select class="form-control" multiple name="subcommitteeSelect" id="subcommitteeSelect" ng-model="data.subcommitteeSelect" ng-change="subcommitteeUpdate()">
+                <option ng-repeat="subcommittee in subcommittees" value="{{subcommittee.subcommittee}}">{{subcommittee.subcommittee}}</option>
+            </select>
+          </div>
+          <div class="form-group" id="agency-group">
+            <label  for="agencySelect">Agency</label>
+            <select class="form-control" multiple name="agencySelect" id="agencySelect" ng-model="data.agencySelect" ng-change="agencyUpdate()">
+                <option ng-repeat="agency in agencies" value="{{agency.agencyCode}}">{{agency.agencyName}}</option>
+            </select>
+          </div>
+          <div class="form-group" id="bureau-group">
+            <label  for="bureauSelect">Bureau</label>
+            <select class="form-control" multiple name="bureauSelect" id="bureauSelect" ng-model="data.bureauSelect" ng-change="bureauUpdate()">
+                <option ng-repeat="bureau in bureaus" value="{{bureau.bureauCode}}">{{bureau.bureauName}}</option>
+            </select>
+          </div>
+          <div class="form-group" id="program-group">
+            <label for="programSelect">Program</label>
+            <select class="form-control" multiple name="programSelect" id="programSelect" ng-model="data.programSelect">
+                <option ng-repeat="program in programs" value="{{program.cfda}}">{{program.title}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="btn btn-lg btn-primary" ng-click="buildParam();">Filter</button>
+          <button class="btn btn-lg btn-primary" ng-click="buildCSVReq();">Export CSV Based On Filter</button>
+          <button class="btn btn-lg btn-primary" ng-click="buildCSV();">Export CSV Bases Only On Years</button>
+        </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script src="./bower_components/openlayers3/build/ol.js"></script>
+  <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
+  <script type="text/javascript" src="./bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.js"></script>
+  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.2.js"></script>
+  <script type="text/javascript" src="./app/app.js"></script>
+  <script type="text/javascript" src="./app/controllers.js"></script>
+  <script type="text/javascript" src="./app/services.js"></script>
+  <script type="text/ng-template" id="customTemplate.html">
+  </body>
+>>>>>>> 8f5e233600fab88a6523577fd98255424919f79e
+</html>

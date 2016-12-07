@@ -1,5 +1,5 @@
 (function(angular) {
-  var AppController = function($scope, $http,Agency, Bureau,Subcommittee,State,Congress, Year, Program) {
+  var AppController = function($rootScope, $scope, $http,Agency, Bureau,Subcommittee,State,Congress, Year, Program) {
 	  var format = 'image/png';
 	  var viewparam = "fy:'2013';cfda:'11.300'\\,'11.302'\\,'16.710'";
 	  var paramv = {'FORMAT': 'image/png',
@@ -10,7 +10,7 @@
         };
 
 	  var wmsSource = new ol.source.ImageWMS({
-		  url: 'http://ec2-54-164-142-147.compute-1.amazonaws.com:8080/geoserver/opengeo/wms',
+		  url: 'http://ec2-54-162-23-31.compute-1.amazonaws.com:8080/geoserver/opengeo/wms',
           params: paramv,
 		  serverType: 'geoserver',
 		  crossOrigin: ''
@@ -28,7 +28,8 @@
 		  layers: [
 		    new ol.layer.Tile({
 		      source: new ol.source.OSM()
-		    }),wmsLayer
+		    }),
+        wmsLayer
 		  ],
 		  target: 'map',
 		  controls: ol.control.defaults({
@@ -38,17 +39,27 @@
 		  }),
 		  view: view
 		});
-	  
-	  
+    // Zooms to continental US using the preselected extent
+    map.getView().fit([-14059521.23466218, 2695475.3654484553, -7230331.379551394, 6344884.84389591], map.getSize());
+
 	  map.on('singleclick', function(evt) {
-		  document.getElementById('info').innerHTML = '';
+      // TODO: handle getFeatureInfo
+		  //document.getElementById('info').innerHTML = '';
 		  var viewResolution = /** @type {number} */ (view.getResolution());
 		  var url = wmsSource.getGetFeatureInfoUrl(
 		      evt.coordinate, viewResolution, 'EPSG:3857',
-		      {'INFO_FORMAT': 'text/html'});
+		      {'INFO_FORMAT': 'application/json'});
 		  if (url) {
-		    document.getElementById('info').innerHTML =
-		        '<iframe seamless id="infof" src="' + url + '"></iframe>';
+        $rootScope.$apply(function () {
+          $rootScope.featureInfo = {};
+          $rootScope.loadingFeatureInfo = true;
+        });
+		    $http.get(url).then(function(result) {
+          $rootScope.loadingFeatureInfo = false;
+          if (result.data.features.length > 0) {
+            $rootScope.featureInfo = result.data.features[0].properties;
+          }
+        });
 		  }
 		});
 	  map.on('pointermove', function(evt) {
@@ -93,18 +104,18 @@
     
     arrayToEscapedComma = function(val){
     	
-    }
+    };
     wmsSource.on('imageloadstart', function() {
-    	var img = document.getElementById('loading');
-        img.style.display = 'inline';
-      });
+
+    });
 
     wmsSource.on('imageloadend', function() {
-    	var img = document.getElementById('loading');
-    	img.style.display = 'none';
+      $rootScope.$apply(function () {
+        $rootScope.wmsLoading = false;
       });
+    });
     $scope.buildParam = function(){
-
+      $rootScope.wmsLoading = true;
     	//"fy:2013;cfda:'11.300'\\,'11.302'\\,'16.710'"
     	var fy = "fy:" + arrayToEscapedComma($scope.data.year) + ";";
     	//var fy = "fy:" + $scope.data.year + ";";
@@ -134,14 +145,14 @@
     }
     
     $scope.buildCSVReq = function(){
-    	var base = "http://ec2-54-164-142-147.compute-1.amazonaws.com:8080/geoserver/opengeo/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=opengeo%3Acdspending" +
+    	var base = "http://ec2-54-162-23-31.compute-1.amazonaws.com:8080/geoserver/opengeo/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=opengeo%3Acdspending" +
     			"&propertyName=fiscal_year,sum,firstname,middlename,lastname,party,subcommittee,start_date,end_date,statefp,cdfp,state,namelsad,cdsessn&outputformat=csv&viewparams=";
     	var out = base + paramv.viewparams;
     	window.open(out);
     }
     
     $scope.buildCSV = function(){
-    	var base = "http://ec2-54-164-142-147.compute-1.amazonaws.com/grantmapper-0.1/form/downloadCSV/";
+    	var base = "http://ec2-54-162-23-31.compute-1.amazonaws.com/grantmapper-0.1/form/downloadCSV/";
     	var out = base + $scope.data.year;
     	window.open(out);
     }
