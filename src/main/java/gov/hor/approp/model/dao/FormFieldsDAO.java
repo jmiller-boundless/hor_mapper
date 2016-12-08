@@ -29,9 +29,11 @@ public class FormFieldsDAO {
     private EntityManager em;
 
     public List<Agency> getAgencies(List<String> subcommittee) {
-        String query = "select distinct agency_code, agency_name from programs.cfda_account WHERE (subcommittee in (:subcommittee)) or (:subcommittee='unspecified') order by agency_name";
+        String query = "select distinct agency_code, agency_name from programs.cfda_account WHERE (subcommittee in (:subcommittee)) or (:subfirst='unspecified') order by agency_name";
         Query q = em.createNativeQuery(query, Agency.class);
         q.setParameter("subcommittee", subcommittee);
+        String subfirst = isOnlyUnspecified(subcommittee);
+        q.setParameter("subfirst", subfirst);
         List<Agency>agencies = q.getResultList();
         Agency unspec = new Agency();
         unspec.setAgency_code("unspecified");
@@ -40,13 +42,23 @@ public class FormFieldsDAO {
         return agencies;
     }
 
-    public List<Bureau> getBureaus(List<String> agency, List<String> subcommittee) {
+    private String isOnlyUnspecified(List<String> subcommittee) {
+		String out = "userchoice";
+		if(subcommittee.size()==1&&subcommittee.get(0).equals("unspecified"))
+			out="unspecified";
+		return out;
+	}
+
+	public List<Bureau> getBureaus(List<String> agency, List<String> subcommittee) {
         String query = "select distinct bureau_code, bureau_name from programs.cfda_account where bureau_code is not null "
-        		+ "AND (agency_code in (:agency) or :agency='unspecified') AND (subcommittee in (:subcommittee) or :subcommittee='unspecified') order by bureau_name";
+        		+ "AND (agency_code in (:agency) or :agencyfirst='unspecified') AND (subcommittee in (:subcommittee) or :subfirst='unspecified') order by bureau_name";
         Query q = em.createNativeQuery(query, Bureau.class);
         q.setParameter("agency", agency);
-      //  List<String> subcommitteequoted = commaListToList(subcommittee);
+        String agencyfirst = isOnlyUnspecified(agency);
+        q.setParameter("agencyfirst", agencyfirst);
         q.setParameter("subcommittee", subcommittee);
+        String subfirst = isOnlyUnspecified(subcommittee);
+        q.setParameter("subfirst", subfirst);
         List<Bureau>bureaus = q.getResultList();
         Bureau unspecified = new Bureau();
         unspecified.setBureau_code("unspecified");
@@ -71,14 +83,20 @@ public class FormFieldsDAO {
 
     public List<Program> getPrograms(List<String> bureau, List<String> subcommittee,List<String> agency ) {
         String query = "select cfda, program_title from programs.cfda_account "
-        		+ "where (bureau_code in (:bureau) or :bureau='unspecified') "
-        		+ "AND (agency_code in (:agency) or :agency='unspecified') "
-        		+ "AND (subcommittee in (:subcommittee) or :subcommittee='unspecified') "
+        		+ "where (bureau_code in (:bureau) or :bureaufirst='unspecified') "
+        		+ "AND (agency_code in (:agency) or :agencyfirst='unspecified') "
+        		+ "AND (subcommittee in (:subcommittee) or :subfirst='unspecified') "
         		+ "order by program_title";
         Query q = em.createNativeQuery(query, Program.class);
         q.setParameter("bureau", bureau);
+        String bureaufirst = isOnlyUnspecified(bureau);
+        q.setParameter("bureaufirst", bureaufirst);
         q.setParameter("agency", agency);
+        String agencyfirst = isOnlyUnspecified(agency);
+        q.setParameter("agencyfirst", agencyfirst);
         q.setParameter("subcommittee", subcommittee);
+        String subfirst = isOnlyUnspecified(subcommittee);
+        q.setParameter("subfirst", subfirst);
         return q.getResultList();
     }
 

@@ -1,7 +1,8 @@
 (function(angular) {
   var AppController = function($rootScope, $scope, $http,Agency, Bureau,Subcommittee,State,Congress, Year, Program) {
 	  var format = 'image/png';
-	  var viewparam = "fy:'2013';cfda:'11.300'\\,'11.302'\\,'16.710'";
+	 //var viewparam = "fy:'2015';cfda:'11.300'\\,'11.302'\\,'16.710'";
+	  var viewparam = "fy:'2015'";
 	  var paramv = {'FORMAT': 'image/png',
               'VERSION': '1.1.1',  
               LAYERS: 'opengeo:cdspending',
@@ -137,7 +138,8 @@
     	if($scope.data.subcommitteeSelect&&$scope.data.subcommitteeSelect.length>0){
     		subcommittee = "subcommittee:"+arrayToEscapedComma($scope.data.subcommitteeSelect)+";";
     	}
-    	var paramout = fy+agency+bureau+cfda;
+    	//var paramout = fy+agency+bureau+cfda;
+    	var paramout = fy+cfda;
     	//alert(paramout);
     	paramv.viewparams = paramout;
     	wmsSource.updateParams(paramv);
