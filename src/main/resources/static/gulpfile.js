@@ -4,12 +4,12 @@ var proxy = require('http-proxy-middleware');
 
 gulp.task('connect', function() {
   connect.server({
-    root: '.',
+    root: ['.', '../../../..'],
     livereload: true,
     middleware: function (connect, opt) {
       return [
         proxy('/grantmapper-0.1', {
-          target: 'http://ec2-54-164-142-147.compute-1.amazonaws.com',
+          target: 'http://ec2-54-162-23-31.compute-1.amazonaws.com',
           chargeOrigin: true
         })
       ];
