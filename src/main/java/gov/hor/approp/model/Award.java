@@ -34,6 +34,8 @@ public class Award {
 	private String member_current;
 	private String party_current;
 	private String usa_spending_cd;
+	private Double x;
+	private Double y;
 	public String getGid() {
 		return gid;
 	}
@@ -183,6 +185,18 @@ public class Award {
 	}
 	public void setUsa_spending_cd(String usa_spending_cd) {
 		this.usa_spending_cd = usa_spending_cd;
+	}
+	public Double getX() {
+		return x;
+	}
+	public void setX(Double x) {
+		this.x = x;
+	}
+	public Double getY() {
+		return y;
+	}
+	public void setY(Double y) {
+		this.y = y;
 	}
 	
 	

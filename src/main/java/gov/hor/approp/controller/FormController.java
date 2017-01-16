@@ -112,7 +112,7 @@ public class FormController {
                 "grant_or_subgrant", "assistance_type", "cfda","subcommittee", "program_title", "agency_name", "bureau_name",
                 "recipient_name", "address", "city",
                 "state", "zip", "zip4", "cd_at_award",
-                "member_at_award", "party_at_award", "cd_current","member_currentid", "member_current", "party_current", "usa_spending_cd"};
+                "member_at_award", "party_at_award", "cd_current","member_currentid", "member_current", "party_current", "usa_spending_cd", "y","x"};
  
         csvWriter.writeHeader(header);
         List<Award>awards = repo.getAwards(fy);

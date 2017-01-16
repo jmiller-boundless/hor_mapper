@@ -92,9 +92,17 @@
     AppController.$inject = ['$scope', 'Subcommittee'];
     State.query(function(response) {
         $scope.states = response ? response : [];
+        $scope.stateSelect = 'unspecified';
       });
     AppController.$inject = ['$scope', 'State']; 
     Congress.query(function(response) {
+        if (response) {
+          _.remove(response, function (congress) {
+            return congress.congress < 100;
+          });
+        }
+        $scope.cs = response[0];
+        console.log(response[0].congress);
         $scope.congresses = response ? response : [];
       });
     AppController.$inject = ['$scope', 'Congress']; 
@@ -210,6 +218,7 @@
         return $http.get('/grantmapper-0.1/form/members', {
           params: {
             partial: val,
+            state: $scope.stateSelect,
             congress: $scope.cs
           }
         }).then(function(response){
