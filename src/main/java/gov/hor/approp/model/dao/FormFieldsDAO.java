@@ -50,8 +50,8 @@ public class FormFieldsDAO {
 	}
 
 	public List<Bureau> getBureaus(List<String> agency, List<String> subcommittee) {
-        String query = "select distinct bureau_code, bureau_name from programs.cfda_account where bureau_code is not null "
-        		+ "AND (agency_code in (:agency) or :agencyfirst='unspecified') AND (subcommittee in (:subcommittee) or :subfirst='unspecified') order by bureau_name";
+        String query = "select distinct bureau_code, bureau_name from programs.cfda_account where bureau_name is not null "
+        		+ "AND (agency_name in (:agency) or :agencyfirst='unspecified') AND (subcommittee in (:subcommittee) or :subfirst='unspecified') order by bureau_name";
         Query q = em.createNativeQuery(query, Bureau.class);
         q.setParameter("agency", agency);
         String agencyfirst = isOnlyUnspecified(agency);
@@ -83,8 +83,8 @@ public class FormFieldsDAO {
 
     public List<Program> getPrograms(List<String> bureau, List<String> subcommittee,List<String> agency ) {
         String query = "select cfda, program_title from programs.cfda_account "
-        		+ "where (bureau_code in (:bureau) or :bureaufirst='unspecified') "
-        		+ "AND (agency_code in (:agency) or :agencyfirst='unspecified') "
+        		+ "where (bureau_name in (:bureau) or :bureaufirst='unspecified') "
+        		+ "AND (agency_name in (:agency) or :agencyfirst='unspecified') "
         		+ "AND (subcommittee in (:subcommittee) or :subfirst='unspecified') "
         		+ "order by program_title";
         Query q = em.createNativeQuery(query, Program.class);
