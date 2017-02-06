@@ -86,7 +86,7 @@ public class FormFieldsDAO {
         		+ "where (bureau_name in (:bureau) or :bureaufirst='unspecified') "
         		+ "AND (agency_name in (:agency) or :agencyfirst='unspecified') "
         		+ "AND (subcommittee in (:subcommittee) or :subfirst='unspecified') "
-        		+ "order by program_title";
+        		+ "order by cfda";
         Query q = em.createNativeQuery(query, Program.class);
         q.setParameter("bureau", bureau);
         String bureaufirst = isOnlyUnspecified(bureau);

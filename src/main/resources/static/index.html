@@ -106,7 +106,7 @@
           <div class="form-group" id="program-group">
             <label for="programSelect">Program</label>
             <select class="form-control" multiple name="programSelect" id="programSelect" ng-model="data.programSelect">
-                <option ng-repeat="program in programs" value="{{program.cfda}}">{{program.title}}</option>
+                <option ng-repeat="program in programs" value="{{program.cfda}}">{{program.cfda}} {{program.title}}</option>
             </select>
           </div>
         </div>
