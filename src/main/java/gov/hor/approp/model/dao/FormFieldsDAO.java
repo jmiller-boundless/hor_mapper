@@ -29,7 +29,7 @@ public class FormFieldsDAO {
     private EntityManager em;
 
     public List<Agency> getAgencies(List<String> subcommittee) {
-        String query = "select distinct agency_code, agency_name from programs.cfda_account WHERE (subcommittee in (:subcommittee)) or (:subfirst='unspecified') order by agency_name";
+        String query = "select distinct on(agency_name) agency_code, agency_name from programs.cfda_account WHERE (subcommittee in (:subcommittee)) or (:subfirst='unspecified') order by agency_name";
         Query q = em.createNativeQuery(query, Agency.class);
         q.setParameter("subcommittee", subcommittee);
         String subfirst = isOnlyUnspecified(subcommittee);
@@ -50,7 +50,7 @@ public class FormFieldsDAO {
 	}
 
 	public List<Bureau> getBureaus(List<String> agency, List<String> subcommittee) {
-        String query = "select distinct bureau_code, bureau_name from programs.cfda_account where bureau_name is not null "
+        String query = "select distinct on(bureau_name) bureau_code, bureau_name from programs.cfda_account where bureau_name is not null "
         		+ "AND (agency_name in (:agency) or :agencyfirst='unspecified') AND (subcommittee in (:subcommittee) or :subfirst='unspecified') order by bureau_name";
         Query q = em.createNativeQuery(query, Bureau.class);
         q.setParameter("agency", agency);
