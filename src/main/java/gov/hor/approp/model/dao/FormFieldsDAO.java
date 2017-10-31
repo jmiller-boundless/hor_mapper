@@ -136,7 +136,7 @@ public class FormFieldsDAO {
     }
 
     public List<String> getYears() {
-        String query = "select distinct extract(year from award_date) as year from spending.grant_geocoded_usaspending3 order by year desc";
+        String query = "select distinct extract(year from award_date) as year from spending.grant_geocoded_usaspending4 order by year desc";
         Query q = em.createNativeQuery(query);
         List<Double> yearsd = q.getResultList();
         Iterator<Double> it = yearsd.iterator();
@@ -146,7 +146,7 @@ public class FormFieldsDAO {
         }
         return years;
     }
-    
+
     public List<Award> getAwards(List<String> fy){
 /*    	String query = "select gg.gid, "
     			+ "gg.award_date, "
@@ -183,6 +183,5 @@ public class FormFieldsDAO {
     	q.setParameter("fy", fy);
         return q.getResultList();
     }
-    
-   
+
 }

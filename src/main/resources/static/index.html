@@ -27,7 +27,7 @@
     </ul>
   </div>
 </script>
-    
+
 
   </head>
   <body ng-app="myApp">
@@ -69,9 +69,10 @@
           <div class="loading" ng-if="loadingFeatureInfo">
             <img src="./ajax-loader.gif" alt="Loading...">
           </div>
-          <div ng-repeat="(key,value) in featureInfo">
-            <h6>{{key}}</h6>
-            {{value}}
+          <div ng-if="featureInfo" ng-cloak>
+            <h5>Rep. {{featureInfo.firstname}} {{featureInfo.lastname}}</h5>
+            <h6>{{featureInfo.party.slice(0,1).toUpperCase()}} - {{featureInfo.state}} {{featureInfo.cdfp}}</h6>
+            <p>Awarded {{featureInfo.sum | currency}} for {{featureInfo.cfda_count_sub}} grants<p>
           </div>
         </div>
       </div>

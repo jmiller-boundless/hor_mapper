@@ -4,14 +4,14 @@
 	 //var viewparam = "fy:'2015';cfda:'11.300'\\,'11.302'\\,'16.710'";
 	  var viewparam = "fy:'2015'";
 	  var paramv = {'FORMAT': 'image/png',
-              'VERSION': '1.1.1',  
+              'VERSION': '1.1.1',
               LAYERS: 'opengeo:cdspending',
               STYLES: '',
               viewparams: viewparam
         };
 
 	  var wmsSource = new ol.source.ImageWMS({
-		  url: 'http://ec2-54-162-23-31.compute-1.amazonaws.com:8080/geoserver/opengeo/wms',
+		  url: 'http://34.226.38.202:8080/geoserver/opengeo/wms',
           params: paramv,
 		  serverType: 'geoserver',
 		  crossOrigin: ''
@@ -20,7 +20,7 @@
 		var wmsLayer = new ol.layer.Image({
 		  source: wmsSource
 		});
-		
+
 		var view = new ol.View({
 			  center: [0, 0],
 			  zoom: 2
@@ -52,7 +52,7 @@
 		      {'INFO_FORMAT': 'application/json'});
 		  if (url) {
         $rootScope.$apply(function () {
-          $rootScope.featureInfo = {};
+          $rootScope.featureInfo = null;
           $rootScope.loadingFeatureInfo = true;
         });
 		    $http.get(url).then(function(result) {
@@ -73,14 +73,14 @@
 		  });
 		  map.getTargetElement().style.cursor = hit ? 'pointer' : '';
 		});
-	  
+
 	  $scope.map=map;
-	  
+
 /*    Agency.query({subcommittee:'AR'},function(response) {
       $scope.agencies = response ? response : [];
     });
     AppController.$inject = ['$scope', 'Agency'];
-    
+
     Bureau.query(function(response) {
         $scope.bureaus = response ? response : [];
       });
@@ -94,7 +94,7 @@
         $scope.states = response ? response : [];
         $scope.stateSelect = 'unspecified';
       });
-    AppController.$inject = ['$scope', 'State']; 
+    AppController.$inject = ['$scope', 'State'];
     Congress.query(function(response) {
         if (response) {
           _.remove(response, function (congress) {
@@ -105,14 +105,14 @@
         console.log(response[0].congress);
         $scope.congresses = response ? response : [];
       });
-    AppController.$inject = ['$scope', 'Congress']; 
+    AppController.$inject = ['$scope', 'Congress'];
     Year.query(function(response) {
         $scope.years = response ? response : [];
       });
-    AppController.$inject = ['$scope', 'Year']; 
-    
+    AppController.$inject = ['$scope', 'Year'];
+
     arrayToEscapedComma = function(val){
-    	
+
     };
     wmsSource.on('imageloadstart', function() {
 
@@ -153,27 +153,27 @@
     	wmsSource.updateParams(paramv);
 
     }
-    
+
     $scope.buildCSVReq = function(){
-    	var base = "http://ec2-54-162-23-31.compute-1.amazonaws.com:8080/geoserver/opengeo/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=opengeo%3Acdspending" +
+    	var base = "http://34.226.38.202:8080/geoserver/opengeo/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=opengeo%3Acdspending" +
     			"&propertyName=fiscal_year,sum,firstname,middlename,lastname,party,subcommittee,start_date,end_date,statefp,cdfp,state,namelsad,cdsessn&outputformat=csv&viewparams=";
     	var out = base + paramv.viewparams;
     	window.open(out);
     }
-    
+
     $scope.buildCSV = function(){
-    	var base = "http://ec2-54-162-23-31.compute-1.amazonaws.com/grantmapper-0.1/form/downloadCSV/";
+    	var base = "/grantmapper-0.1/form/downloadCSV/";
     	var out = base + $scope.data.year;
     	window.open(out);
     }
-    
+
     $scope.subcommitteeUpdate = function(){
     	var sub = $scope.data.subcommitteeSelect;
     	Agency.query({subcommittee:sub},function(response) {
     	      $scope.agencies = response ? response : [];
         });
     }
-    
+
     $scope.agencyUpdate = function(){
     	var agency = $scope.data.agencySelect;
     	var sub = $scope.data.subcommitteeSelect;
@@ -181,7 +181,7 @@
     	      $scope.bureaus = response ? response : [];
         });
     }
-    
+
     $scope.bureauUpdate = function(){
     	var bureau = $scope.data.bureauSelect;
     	var agency = $scope.data.agencySelect;
@@ -190,7 +190,7 @@
     	      $scope.programs = response ? response : [];
         });
     }
-    
+
     arrayToEscapedComma = function(val){
     	var out="";
     	for (i = 0; i < val.length; i++) {
@@ -213,7 +213,7 @@
     	}
     	return out;
     }
-    
+
     $scope.getLocation = function(val) {
         return $http.get('/grantmapper-0.1/form/members', {
           params: {
@@ -228,7 +228,7 @@
           });
         });
       };
-      
+
       $scope.getLocation2 = function(val) {
           return $http.get('/grantmapper-0.1/form/programs', {
             params: {
@@ -260,19 +260,19 @@
 
       $scope.onSelect = function ($item, $model, $label) {
     	    $scope.$item = $item;
-    	    var f = new ol.format.GeoJSON(); 
-    	    var geom = f.readGeometry($item.geom,{dataProjection:'EPSG:4326',featureProjection:'EPSG:3857'}); 
+    	    var f = new ol.format.GeoJSON();
+    	    var geom = f.readGeometry($item.geom,{dataProjection:'EPSG:4326',featureProjection:'EPSG:3857'});
     	    //alert($scope.map.getView());
     	    $scope.map.getView().fit(geom.getExtent(), $scope.map.getSize());
     	};
-    	
+
         $scope.onSelect2 = function ($item, $model, $label) {
     	    $scope.cfda = $item.cfda;
     	    //alert($scope.$item.cfda);
     	};
     	$scope.statezoom = function(){
-    		var f = new ol.format.GeoJSON(); 
-    	    var geom = f.readGeometry($scope.data.stateSelect,{dataProjection:'EPSG:4326',featureProjection:'EPSG:3857'}); 
+    		var f = new ol.format.GeoJSON();
+    	    var geom = f.readGeometry($scope.data.stateSelect,{dataProjection:'EPSG:4326',featureProjection:'EPSG:3857'});
     	    //alert($scope.map.getView());
     	    $scope.map.getView().fit(geom.getExtent(), $scope.map.getSize());
     	}
