@@ -7,6 +7,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "cfda_account", schema = "programs")
 public class Subcommittee {
+
     @Id
     private String subcommittee;
 

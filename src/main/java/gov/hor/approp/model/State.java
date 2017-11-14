@@ -17,8 +17,10 @@ import com.vividsolutions.jts.geom.Geometry;
 @Entity
 @Table(name = "state", schema = "tiger")
 public class State {
+
     @Id
     private String name;
+
     @Column(name = "the_geom", columnDefinition = "Geometry")
     @Type(type = "org.hibernate.spatial.GeometryType")
     private Geometry the_geom;

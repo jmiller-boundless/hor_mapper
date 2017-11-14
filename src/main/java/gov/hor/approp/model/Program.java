@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "cfda_account", schema = "programs")
 public class Program {
+
     @Id
     private String cfda;
     private String program_title;

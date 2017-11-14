@@ -17,11 +17,13 @@ import com.vividsolutions.jts.geom.Geometry;
 @Entity
 @Table(name = "member", schema = "members")
 public class Member {
+
     @Id
     private int id;
     private String lastname;
     private String firstname;
     private String middlename;
+
     @Column(name = "the_geom", columnDefinition = "Geometry")
     @Type(type = "org.hibernate.spatial.GeometryType")
     private Geometry the_geom;

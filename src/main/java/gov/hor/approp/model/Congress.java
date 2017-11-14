@@ -7,6 +7,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "member", schema = "term")
 public class Congress {
+
     @Id
     private Integer congress;
 
