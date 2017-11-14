@@ -4,6 +4,7 @@ import gov.hor.approp.model.Agency;
 import gov.hor.approp.model.Award;
 import gov.hor.approp.model.Bureau;
 import gov.hor.approp.model.Congress;
+import gov.hor.approp.model.csv.GrantView;
 import gov.hor.approp.model.Member;
 import gov.hor.approp.model.Program;
 import gov.hor.approp.model.State;
@@ -14,12 +15,20 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Metamodel;
+import javax.persistence.metamodel.EntityType;
 
 import org.springframework.stereotype.Repository;
 
@@ -136,15 +145,9 @@ public class FormFieldsDAO {
     }
 
     public List<String> getYears() {
-        String query = "select distinct extract(year from award_date) as year from spending.grant_geocoded_usaspending4 order by year desc";
+        String query = "select distinct fiscal_year from spending.grant_geocoded_usaspending6 order by fiscal_year desc";
         Query q = em.createNativeQuery(query);
-        List<Double> yearsd = q.getResultList();
-        Iterator<Double> it = yearsd.iterator();
-        List<String> years = new ArrayList<String>();
-        while (it.hasNext()) {
-            years.add(String.valueOf(it.next().intValue()));
-        }
-        return years;
+        return q.getResultList();
     }
 
     public List<Award> getAwards(List<String> fy){
@@ -182,6 +185,59 @@ public class FormFieldsDAO {
     	Query q = em.createNativeQuery(query, Award.class);
     	q.setParameter("fy", fy);
         return q.getResultList();
+    }
+
+    public List<GrantView> getGrants(List<String> fiscal_year,
+            List<String> subcommittee,
+            List<String> agency_name,
+            List<String> bureau_name,
+            List<String> cfda,
+            List<String> state) {
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+        CriteriaQuery<GrantView> query = builder.createQuery(GrantView.class);
+//        Metamodel m = em.getMetamodel();
+//        EntityType<GrantView> GrantView_ = m.entity(GrantView.class);
+        Root<GrantView> grant = query.from(GrantView.class);
+        grant.fetch("awardMember");
+        grant.fetch("awardTerm");
+        grant.fetch("currentMember");
+        grant.fetch("currentTerm");
+        
+        ArrayList<Predicate> predicates = new ArrayList<>();
+        
+        if (includeList(fiscal_year)) {
+            predicates.add(grant.get("fiscal_year").in(fiscal_year));
+        }
+        
+        if (includeList(subcommittee)) {
+            predicates.add(grant.get("subcommittee").in(subcommittee));
+        }
+        
+        if (includeList(agency_name)) {
+            predicates.add(grant.get("agency_name").in(agency_name));
+        }
+        
+        if (includeList(bureau_name)) {
+            predicates.add(grant.get("bureau_name").in(bureau_name));
+        }
+        
+        if (includeList(cfda)) {
+            predicates.add(grant.get("cfda").in(cfda));
+        }
+        
+        if (includeList(state)) {
+            predicates.add(grant.get("state").in(state));
+        }
+        
+        Predicate[] ps = predicates.toArray(new Predicate[predicates.size()]);
+        
+        query.where(builder.and(ps));
+
+        return em.createQuery(query).getResultList();
+    }
+    
+    public boolean includeList(List<String> list) {
+    	return list != null && list.size() > 0 && !(list.size() == 1 && list.get(0).equals("unspecified"));
     }
 
 }

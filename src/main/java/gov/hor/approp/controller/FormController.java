@@ -4,6 +4,7 @@ import gov.hor.approp.model.Agency;
 import gov.hor.approp.model.Award;
 import gov.hor.approp.model.Bureau;
 import gov.hor.approp.model.Congress;
+import gov.hor.approp.model.csv.GrantView;
 import gov.hor.approp.model.Member;
 import gov.hor.approp.model.Program;
 import gov.hor.approp.model.State;
@@ -11,6 +12,7 @@ import gov.hor.approp.model.Subcommittee;
 import gov.hor.approp.model.dao.FormFieldsDAO;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -66,7 +68,7 @@ public class FormController {
 
     /*
      * @RequestMapping(value = "/programs", method = RequestMethod.GET) public
-     * 
+     *
      * @ResponseBody List<Program> getPrograms(@RequestParam String partial) {
      * List<Program> subs = repo.getCfdaAutoComplete(partial); return subs; }
      */
@@ -76,7 +78,7 @@ public class FormController {
         List<Program> subs = repo.getPrograms(bureau,subcommittee,agency);
         return subs;
     }
-    
+
  /*   String csvFileName = "dvof.csv";
     response.setContentType("text/csv");
     String headerKey = "Content-Disposition";
@@ -94,36 +96,72 @@ public class FormController {
     @RequestMapping(value = "/downloadCSV/{fy}")
     public void downloadCSV(@PathVariable List<String> fy, HttpServletResponse response) throws IOException{
     	String csvFileName = "programs.csv";
-    	 
+
         response.setContentType("text/csv");
- 
+
         // creates mock data
         String headerKey = "Content-Disposition";
         String headerValue = String.format("attachment; filename=\"%s\"",
                 csvFileName);
         response.setHeader(headerKey, headerValue);
- 
- 
+
+
         // uses the Super CSV API to generate CSV data from the model data
         ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
                 CsvPreference.STANDARD_PREFERENCE);
- 
+
         String[] header = { "gid", "award_date", "award_amount", "fiscal_year",
                 "grant_or_subgrant", "assistance_type", "cfda","subcommittee", "program_title", "agency_name", "bureau_name",
                 "recipient_name", "address", "city",
                 "state", "zip", "zip4", "cd_at_award",
                 "member_at_award", "party_at_award", "cd_current","member_currentid", "member_current", "party_current", "usa_spending_cd", "y","x"};
- 
+
         csvWriter.writeHeader(header);
         List<Award>awards = repo.getAwards(fy);
- 
+
         for (Award award : awards) {
             csvWriter.write(award, header);
         }
- 
+
         csvWriter.close();
     }
-    
+
+    @RequestMapping(value = "/downloadFilteredCSV", method = RequestMethod.GET)
+    public void downloadFilteredCsv(@RequestParam(required = false) List<String> fiscal_year,
+        @RequestParam(required = false) List<String> subcommittee,
+        @RequestParam(required = false) List<String> agency_name,
+        @RequestParam(required = false) List<String> bureau_name,
+        @RequestParam(required = false) List<String> cfda,
+        @RequestParam(required = false) List<String> state,
+        HttpServletResponse response) throws IOException {
+        String csvFileName = "programs.csv";
+
+        response.setContentType("text/csv");
+
+        String headerKey = "Content-Disposition";
+        String headerValue = String.format("attachment; filename=\"%s\"",
+                csvFileName);
+        response.setHeader(headerKey, headerValue);
+
+        // uses the Super CSV API to generate CSV data from the model data
+        ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
+                CsvPreference.STANDARD_PREFERENCE);
+
+        String[] header = { "gid", "unique_transaction_id", "award_date", "award_amount", "award_type",
+                "fiscal_year", "cfda", "subcommittee", "program_title", "agency_name", "bureau_name",
+                "recipient_name", "address", "city", "state", "statefp", "zip", "zip4", "congress",
+                "cd_at_award", "member_at_award", "party_at_award", "cd_current","member_current", "party_current"};
+
+        csvWriter.writeHeader(header);
+        List<GrantView> grants = repo.getGrants(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state);
+
+        for (GrantView grant : grants) {
+            csvWriter.write(grant, header);
+        }
+
+        csvWriter.close();
+    }
+
     @RequestMapping(value = "/congresses", method = RequestMethod.GET)
     public @ResponseBody List<Congress> getCongresses() {
         List<Congress> subs = repo.getCongresses();

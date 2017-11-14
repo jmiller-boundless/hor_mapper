@@ -1,11 +1,12 @@
 (function(angular) {
-  var AppController = function($rootScope, $scope, $http,Agency, Bureau,Subcommittee,State,Congress, Year, Program) {
+  var AppController = function($rootScope, $scope, $http, $httpParamSerializer, Agency, Bureau,Subcommittee,State,Congress, Year, Program) {
+    $scope.data = {};
 	  var format = 'image/png';
 	 //var viewparam = "fy:'2015';cfda:'11.300'\\,'11.302'\\,'16.710'";
 	  var viewparam = "fy:'2015'";
 	  var paramv = {'FORMAT': 'image/png',
               'VERSION': '1.1.1',
-              LAYERS: 'opengeo:cdspending',
+              LAYERS: 'opengeo:mapview',
               STYLES: '',
               viewparams: viewparam
         };
@@ -125,32 +126,43 @@
     });
     $scope.buildParam = function(){
       $rootScope.wmsLoading = true;
-    	//"fy:2013;cfda:'11.300'\\,'11.302'\\,'16.710'"
-    	var fy = "fy:" + arrayToEscapedComma($scope.data.year) + ";";
-    	//var fy = "fy:" + $scope.data.year + ";";
-    	var agency="";
-    	if($scope.data.agencySelect&&$scope.data.agencySelect.length>0){
-    		agency = "agencycode:"+arrayToEscapedComma($scope.data.agencySelect) + ";";
-    		//agency = "agencycode:'"+$scope.data.agencySelect+"';";
-    	}
-    	var bureau="";
-    	if($scope.data.bureauSelect&&$scope.data.bureauSelect.length>0){
-    		bureau = "bureaucode:"+arrayToEscapedComma($scope.data.bureauSelect) + ";";
-    		//bureau = "bureaucode:'"+$scope.data.bureauSelect+"';";
-    	}
-    	var cfda="";
-    	if($scope.data.programSelect&&$scope.data.programSelect.length>0){
-    		cfda = "cfda:"+arrayToEscapedComma($scope.data.programSelect) + ";";
-    	}
-    	var subcommittee="";
-    	if($scope.data.subcommitteeSelect&&$scope.data.subcommitteeSelect.length>0){
-    		subcommittee = "subcommittee:"+arrayToEscapedComma($scope.data.subcommitteeSelect)+";";
-    	}
-    	//var paramout = fy+agency+bureau+cfda;
-    	var paramout = fy+cfda;
-    	//alert(paramout);
-    	paramv.viewparams = paramout;
-    	wmsSource.updateParams(paramv);
+      //"fy:2013;cfda:'11.300'\\,'11.302'\\,'16.710'"
+      var fy = "";
+      if($scope.data.year &&
+        $scope.data.year.length > 0){
+        fy = "fy:" + arrayToEscapedComma($scope.data.year) + ";";
+      }
+
+      var agency="";
+      if($scope.data.agencySelect &&
+        $scope.data.agencySelect.length > 0 &&
+        !($scope.data.agencySelect.length === 1 && $scope.data.agencySelect[0] === "unspecified")) {
+        agency = "agencycode:"+arrayToEscapedComma($scope.data.agencySelect) + ";";
+      }
+      var bureau="";
+      if($scope.data.bureauSelect &&
+        $scope.data.bureauSelect.length > 0 &&
+        !($scope.data.bureauSelect.length === 1 && $scope.data.bureauSelect[0] === "unspecified")) {
+        bureau = "bureaucode:"+arrayToEscapedComma($scope.data.bureauSelect) + ";";
+      }
+
+      var cfda="";
+      if($scope.data.programSelect &&
+        $scope.data.programSelect.length > 0 &&
+        !($scope.data.programSelect.length === 1 && $scope.data.programSelect[0] === "unspecified")) {
+        cfda = "cfda:"+arrayToEscapedComma($scope.data.programSelect) + ";";
+      }
+
+      var subcommittee="";
+      if($scope.data.subcommitteeSelect &&
+        $scope.data.subcommitteeSelect.length > 0 &&
+        !($scope.data.subcommitteeSelect.length === 1 && $scope.data.subcommitteeSelect[0] === "unspecified")) {
+        subcommittee = "subcommittee:"+arrayToEscapedComma($scope.data.subcommitteeSelect)+";";
+      }
+
+      var paramout = fy+subcommittee+agency+bureau+cfda;
+      paramv.viewparams = paramout;
+      wmsSource.updateParams(paramv);
 
     }
 
@@ -166,6 +178,19 @@
     	var out = base + $scope.data.year;
     	window.open(out);
     }
+
+    $scope.getFilteredCsv = function() {
+      var getParameters = $httpParamSerializer({
+        fiscal_year: $scope.data.year,
+        subcommittee: $scope.data.subcommitteeSelect,
+        agency_name: $scope.data.agencySelect,
+        bureau_name: $scope.data.bureauSelect,
+        cfda: $scope.data.programSelect,
+        // state: $scope.stateSelect
+      });
+      var base = "/grantmapper-0.1/form/downloadFilteredCSV?";
+      return base + getParameters;
+    };
 
     $scope.subcommitteeUpdate = function(){
     	var sub = $scope.data.subcommitteeSelect;

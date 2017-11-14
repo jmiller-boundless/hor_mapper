@@ -113,7 +113,7 @@
         </div>
         <div class="buttons">
           <button class="btn btn-lg btn-primary" ng-click="buildParam();">Filter</button>
-          <button class="btn btn-lg btn-primary" ng-click="buildCSVReq();">Export CSV Based On Filter</button>
+          <a class="btn btn-lg btn-primary" ng-href="{{ getFilteredCsv() }}">Export CSV Based On Filter</a>
           <button class="btn btn-lg btn-primary" ng-click="buildCSV();">Export CSV Based Only On Years</button>
         </div>
           </div>
