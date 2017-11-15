@@ -50,14 +50,14 @@
           <form>
             <div class="form-group">
               <label for="congressSelect">Congress</label>
-              <select class="form-control" name="congressSelect" id="congressSelect" ng-model="cs">
-                  <option ng-repeat="congress in congresses" value="{{congress.congress}}">{{congress.congress}}</option>
+              <select class="form-control" name="congressSelect" id="congressSelect" ng-model="cs"
+                  ng-options="c as c.congress for c in congresses">
               </select>
             </div>
             <div class="form-group">
               <label for="stateSelect">State</label>
-              <select class="form-control" name="stateSelect" id="stateSelect" ng-model="stateSelect">
-                  <option ng-repeat="state in states" value="{{state.name}}">{{state.name}}</option>
+              <select class="form-control" name="stateSelect" id="stateSelect" ng-model="stateSelect"
+                  ng-options="s as s.name for s in states">
               </select>
             </div>
             <div class="form-group">

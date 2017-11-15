@@ -104,11 +104,12 @@ public class FormFieldsDAO {
     }
 
     public List<State> getStates() {
-        String query = "select name, st_envelope(the_geom) as the_geom from tiger.state order by name";
+        String query = "select name, stusps, st_envelope(the_geom) as the_geom from tiger.state order by name";
         Query q = em.createNativeQuery(query, State.class);
         List<State> states = q.getResultList();
         State unspecified = new State();
         unspecified.setName("unspecified");
+        unspecified.setAbbrev("unspecified");
         states.add(0, unspecified);
         return states;
     }

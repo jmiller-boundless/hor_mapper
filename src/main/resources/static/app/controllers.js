@@ -93,7 +93,7 @@
     AppController.$inject = ['$scope', 'Subcommittee'];
     State.query(function(response) {
         $scope.states = response ? response : [];
-        $scope.stateSelect = 'unspecified';
+        $scope.stateSelect = $scope.states[0];
       });
     AppController.$inject = ['$scope', 'State'];
     Congress.query(function(response) {
@@ -103,7 +103,6 @@
           });
         }
         $scope.cs = response[0];
-        console.log(response[0].congress);
         $scope.congresses = response ? response : [];
       });
     AppController.$inject = ['$scope', 'Congress'];
@@ -186,7 +185,7 @@
         agency_name: $scope.data.agencySelect,
         bureau_name: $scope.data.bureauSelect,
         cfda: $scope.data.programSelect,
-        // state: $scope.stateSelect
+        state: _.get($scope, 'stateSelect.abbrev')
       });
       var base = "/grantmapper-0.1/form/downloadFilteredCSV?";
       return base + getParameters;
@@ -243,8 +242,8 @@
         return $http.get('/grantmapper-0.1/form/members', {
           params: {
             partial: val,
-            state: $scope.stateSelect,
-            congress: $scope.cs
+            state: $scope.stateSelect.name,
+            congress: $scope.cs.congress
           }
         }).then(function(response){
           return response.data.map(function(item){
@@ -297,7 +296,7 @@
     	};
     	$scope.statezoom = function(){
     		var f = new ol.format.GeoJSON();
-    	    var geom = f.readGeometry($scope.data.stateSelect,{dataProjection:'EPSG:4326',featureProjection:'EPSG:3857'});
+          var geom = f.readGeometry($scope.data.stateSelect.geom,{dataProjection:'EPSG:4326',featureProjection:'EPSG:3857'});
     	    //alert($scope.map.getView());
     	    $scope.map.getView().fit(geom.getExtent(), $scope.map.getSize());
     	}

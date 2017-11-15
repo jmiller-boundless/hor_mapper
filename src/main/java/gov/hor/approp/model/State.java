@@ -21,6 +21,9 @@ public class State {
     @Id
     private String name;
 
+    @Column(name = "stusps")
+    private String abbrev;
+
     @Column(name = "the_geom", columnDefinition = "Geometry")
     @Type(type = "org.hibernate.spatial.GeometryType")
     private Geometry the_geom;
@@ -42,6 +45,20 @@ public class State {
     @JsonProperty("geom")
     public void setThe_geom(Geometry the_geom) {
         this.the_geom = the_geom;
+    }
+
+    /**
+     * @return the abbrev
+     */
+    public String getAbbrev() {
+        return abbrev;
+    }
+
+    /**
+     * @param abbrev the abbrev to set
+     */
+    public void setAbbrev(String abbrev) {
+        this.abbrev = abbrev;
     }
 
 }
