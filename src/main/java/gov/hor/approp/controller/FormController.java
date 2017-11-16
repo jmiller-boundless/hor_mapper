@@ -9,6 +9,7 @@ import gov.hor.approp.model.Member;
 import gov.hor.approp.model.Program;
 import gov.hor.approp.model.State;
 import gov.hor.approp.model.Subcommittee;
+import gov.hor.approp.model.csv.Grant;
 import gov.hor.approp.model.dao.FormFieldsDAO;
 
 import java.io.IOException;
@@ -129,15 +130,15 @@ public class FormController {
         csvWriter.close();
     }
 
-    @RequestMapping(value = "/downloadFilteredCSV", method = RequestMethod.GET)
-    public void downloadFilteredCsv(@RequestParam(required = false) List<String> fiscal_year,
+    @RequestMapping(value = "/getGrantsViewCSV", method = RequestMethod.GET)
+    public void getGrantsViewCSV(@RequestParam(required = false) List<String> fiscal_year,
             @RequestParam(required = false) List<String> subcommittee,
             @RequestParam(required = false) List<String> agency_name,
             @RequestParam(required = false) List<String> bureau_name,
             @RequestParam(required = false) List<String> cfda,
             @RequestParam(required = false) List<String> state,
             HttpServletResponse response) throws IOException {
-        String csvFileName = "programs.csv";
+        String csvFileName = "materializedview.csv";
 
         response.setContentType("text/csv");
 
@@ -156,9 +157,55 @@ public class FormController {
             "cd_at_award", "member_at_award", "party_at_award", "cd_current", "member_current", "party_current"};
 
         csvWriter.writeHeader(header);
-        List<GrantView> grants = repo.getGrants(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state);
+        List<GrantView> grants = repo.getGrantViews(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state);
 
         for (GrantView grant : grants) {
+            csvWriter.write(grant, header);
+        }
+
+        csvWriter.close();
+    }
+
+    @RequestMapping(value = "/getGrantsCSV", method = RequestMethod.GET)
+    public void getGrantsCSV(@RequestParam(required = false) List<String> fiscal_year,
+            @RequestParam(required = false) List<String> subcommittee,
+            @RequestParam(required = false) List<String> agency_name,
+            @RequestParam(required = false) List<String> bureau_name,
+            @RequestParam(required = false) List<String> cfda,
+            @RequestParam(required = false) List<String> state,
+            HttpServletResponse response) throws IOException {
+        String csvFileName = "grants.csv";
+
+        response.setContentType("text/csv");
+
+        String headerKey = "Content-Disposition";
+        String headerValue = String.format("attachment; filename=\"%s\"",
+                csvFileName);
+        response.setHeader(headerKey, headerValue);
+
+        // uses the Super CSV API to generate CSV data from the model data
+        ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(),
+                CsvPreference.STANDARD_PREFERENCE);
+
+        String[] header = {"id", "uniqueTransactionId", "transactionStatus", "fyq", "cfdaProgramNum", "saiNumber",
+            "accountTitle", "recipientName", "recipientCityCode", "recipientCityName", "recipientCountyCode",
+            "recipientCountyName", "recipientZip", "recipientType", "actionType", "agencyCode", "federalAwardId",
+//            "federalAwardMod", "fedFundingAmount", "nonFedFundingAmount", "totalFundingAmount", "obligationActionDate",
+            "federalAwardMod", "fedFundingAmount", "obligationActionDate",
+            "startingDate", "endingDate", "assistanceType", "recordType", "correctionLateInd", "fyqCorrection",
+            "principalPlaceCode", "principalPlaceState", "principalPlaceCc", "principalPlaceCountryCode",
+            "principalPlaceZip", "principalPlaceCd", "cfdaProgramTitle", "agencyName", "projectDescription", "dunsNo",
+            "dunsConfCode", "progsrcAgenCode", "progsrcAcntCode", "progsrcSubacntCode", "receipAddr1", "receipAddr2",
+//            "receipAddr3", "faceLoanGuran", "origSubGuran", "fiscalYear", "principalPlaceStateCode", "recipCatType",
+            "receipAddr3", "fiscalYear", "principalPlaceStateCode", "recipCatType",
+            "asstCatType", "recipientCd", "majAgencyCat", "recFlag", "recipientCountryCode", "uri", "recipientStateCode",
+            "exec1Fullname", "exec1Amount", "exec2Fullname", "exec2Amount", "exec3Fullname", "exec3Amount",
+            "exec4Fullname", "exec4Amount", "exec5Fullname", "exec5Amount", "lastModifiedDate"};
+
+        csvWriter.writeHeader(header);
+        List<Grant> grants = repo.getGrants(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state);
+
+        for (Grant grant : grants) {
             csvWriter.write(grant, header);
         }
 

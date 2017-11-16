@@ -7,7 +7,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -15,7 +14,7 @@ import javax.persistence.Table;
 public class GrantView {
 
     @Id
-    private String gid;
+    private Integer gid;
     private String unique_transaction_id;
     private Date award_date;
     private String award_amount;
@@ -60,14 +59,14 @@ public class GrantView {
     /**
      * @return the gid
      */
-    public String getGid() {
+    public Integer getGid() {
         return gid;
     }
 
     /**
      * @param gid the gid to set
      */
-    public void setGid(String gid) {
+    public void setGid(Integer gid) {
         this.gid = gid;
     }
 

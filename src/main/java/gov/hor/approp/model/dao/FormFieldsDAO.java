@@ -9,6 +9,7 @@ import gov.hor.approp.model.Member;
 import gov.hor.approp.model.Program;
 import gov.hor.approp.model.State;
 import gov.hor.approp.model.Subcommittee;
+import gov.hor.approp.model.csv.Grant;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -182,7 +183,7 @@ public class FormFieldsDAO {
         return q.getResultList();
     }
 
-    public List<GrantView> getGrants(List<String> fiscal_year,
+    public List<GrantView> getGrantViews(List<String> fiscal_year,
             List<String> subcommittee,
             List<String> agency_name,
             List<String> bureau_name,
@@ -190,38 +191,88 @@ public class FormFieldsDAO {
             List<String> state) {
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<GrantView> query = builder.createQuery(GrantView.class);
+        // TODO: Generate metamodel classes so these fields aren't hardcoded.
 //        Metamodel m = em.getMetamodel();
 //        EntityType<GrantView> GrantView_ = m.entity(GrantView.class);
-        Root<GrantView> grant = query.from(GrantView.class);
-        grant.fetch("awardMember");
-        grant.fetch("awardTerm");
-        grant.fetch("currentMember");
-        grant.fetch("currentTerm");
+        Root<GrantView> grantView = query.from(GrantView.class);
+        // Use fetch to join the tables in the same request. Otherwise JPA will make separate requests for each row.
+        grantView.fetch("awardMember");
+        grantView.fetch("awardTerm");
+        grantView.fetch("currentMember");
+        grantView.fetch("currentTerm");
 
         ArrayList<Predicate> predicates = new ArrayList<>();
 
         if (includeList(fiscal_year)) {
-            predicates.add(grant.get("fiscal_year").in(fiscal_year));
+            predicates.add(grantView.get("fiscal_year").in(fiscal_year));
         }
 
         if (includeList(subcommittee)) {
-            predicates.add(grant.get("subcommittee").in(subcommittee));
+            predicates.add(grantView.get("subcommittee").in(subcommittee));
         }
 
         if (includeList(agency_name)) {
-            predicates.add(grant.get("agency_name").in(agency_name));
+            predicates.add(grantView.get("agency_name").in(agency_name));
         }
 
         if (includeList(bureau_name)) {
-            predicates.add(grant.get("bureau_name").in(bureau_name));
+            predicates.add(grantView.get("bureau_name").in(bureau_name));
         }
 
         if (includeList(cfda)) {
-            predicates.add(grant.get("cfda").in(cfda));
+            predicates.add(grantView.get("cfda").in(cfda));
         }
 
         if (includeList(state)) {
-            predicates.add(grant.get("state").in(state));
+            predicates.add(grantView.get("state").in(state));
+        }
+
+        Predicate[] ps = predicates.toArray(new Predicate[predicates.size()]);
+
+        query.where(builder.and(ps));
+
+        return em.createQuery(query).getResultList();
+    }
+
+    public List<Grant> getGrants(List<String> fiscal_year,
+            List<String> subcommittee,
+            List<String> agency_name,
+            List<String> bureau_name,
+            List<String> cfda,
+            List<String> state) {
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+        CriteriaQuery<Grant> query = builder.createQuery(Grant.class);
+        // TODO: Generate metamodel classes so these fields aren't hardcoded.
+//        Metamodel m = em.getMetamodel();
+//        EntityType<GrantView> GrantView_ = m.entity(GrantView.class);
+        Root<Grant> grant = query.from(Grant.class);
+        // Use fetch to join the tables in the same request. Otherwise JPA will make separate requests for each row.
+        grant.fetch("grantView");
+
+        ArrayList<Predicate> predicates = new ArrayList<>();
+
+        if (includeList(fiscal_year)) {
+            predicates.add(grant.get("grantView").<String>get("fiscal_year").in(fiscal_year));
+        }
+
+        if (includeList(subcommittee)) {
+            predicates.add(grant.get("grantView").<String>get("subcommittee").in(subcommittee));
+        }
+
+        if (includeList(agency_name)) {
+            predicates.add(grant.get("grantView").<String>get("agency_name").in(agency_name));
+        }
+
+        if (includeList(bureau_name)) {
+            predicates.add(grant.get("grantView").<String>get("bureau_name").in(bureau_name));
+        }
+
+        if (includeList(cfda)) {
+            predicates.add(grant.get("grantView").<String>get("cfda").in(cfda));
+        }
+
+        if (includeList(state)) {
+            predicates.add(grant.get("grantView").<String>get("state").in(state));
         }
 
         Predicate[] ps = predicates.toArray(new Predicate[predicates.size()]);

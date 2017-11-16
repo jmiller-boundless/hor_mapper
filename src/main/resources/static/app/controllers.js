@@ -178,7 +178,7 @@
     	window.open(out);
     }
 
-    $scope.getFilteredCsv = function() {
+    $scope.getGrantsViewCSV = function() {
       var getParameters = $httpParamSerializer({
         fiscal_year: $scope.data.year,
         subcommittee: $scope.data.subcommitteeSelect,
@@ -187,7 +187,20 @@
         cfda: $scope.data.programSelect,
         state: _.get($scope, 'stateSelect.abbrev')
       });
-      var base = "/grantmapper-0.1/form/downloadFilteredCSV?";
+      var base = "/grantmapper-0.1/form/getGrantsViewCSV?";
+      return base + getParameters;
+    };
+
+    $scope.getGrantsCSV = function() {
+      var getParameters = $httpParamSerializer({
+        fiscal_year: $scope.data.year,
+        subcommittee: $scope.data.subcommitteeSelect,
+        agency_name: $scope.data.agencySelect,
+        bureau_name: $scope.data.bureauSelect,
+        cfda: $scope.data.programSelect,
+        state: _.get($scope, 'stateSelect.abbrev')
+      });
+      var base = "/grantmapper-0.1/form/getGrantsCSV?";
       return base + getParameters;
     };
 
