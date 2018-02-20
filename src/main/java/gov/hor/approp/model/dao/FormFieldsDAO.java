@@ -141,7 +141,7 @@ public class FormFieldsDAO {
     }
 
     public List<String> getYears() {
-        String query = "select distinct fiscal_year from spending.grant_geocoded_usaspending6 order by fiscal_year desc";
+        String query = "select distinct fiscal_year from spending.grant_geocoded_usaspending7 order by fiscal_year desc";
         Query q = em.createNativeQuery(query);
         return q.getResultList();
     }

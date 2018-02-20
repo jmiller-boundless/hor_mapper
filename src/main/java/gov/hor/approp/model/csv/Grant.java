@@ -83,6 +83,7 @@ public class Grant implements Serializable {
     private String federalAwardMod;
     @Column(name = "fed_funding_amount")
     private BigDecimal fedFundingAmount;
+    // The postgres money datatype cannot be converted (easily) to a Java type.
 //    @Column(name = "non_fed_funding_amount")
 //    private Double nonFedFundingAmount;
 //    @Column(name = "total_funding_amount")
@@ -158,6 +159,7 @@ public class Grant implements Serializable {
     @Size(max = 255)
     @Column(name = "receip_addr3")
     private String receipAddr3;
+    // The postgres money datatype cannot be converted (easily) to a Java type.
 //    @Column(name = "face_loan_guran")
 //    private Double faceLoanGuran;
 //    @Column(name = "orig_sub_guran")
@@ -219,6 +221,8 @@ public class Grant implements Serializable {
     @Column(name = "last_modified_date")
     @Temporal(TemporalType.DATE)
     private Date lastModifiedDate;
+    @Column(name = "geocode_cascade")
+    private String geocodeCascade;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id", referencedColumnName = "gid")
@@ -776,6 +780,14 @@ public class Grant implements Serializable {
 
     public void setLastModifiedDate(Date lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public String getGeocodeCascade() {
+        return geocodeCascade;
+    }
+
+    public void setGeocodeCascade(String geocodeCascade) {
+        this.geocodeCascade = geocodeCascade;
     }
 
     @Override

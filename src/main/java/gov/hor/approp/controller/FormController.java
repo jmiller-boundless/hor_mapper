@@ -154,7 +154,7 @@ public class FormController {
         String[] header = {"gid", "unique_transaction_id", "award_date", "award_amount", "award_type",
             "fiscal_year", "cfda", "subcommittee", "program_title", "agency_name", "bureau_name",
             "recipient_name", "address", "city", "state", "statefp", "zip", "zip4", "congress",
-            "cd_at_award", "member_at_award", "party_at_award", "cd_current", "member_current", "party_current"};
+            "cd_at_award", "member_at_award", "party_at_award", "cd_current", "member_current", "party_current", "geocodeCascade"};
 
         csvWriter.writeHeader(header);
         List<GrantView> grants = repo.getGrantViews(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state);
@@ -200,7 +200,7 @@ public class FormController {
             "receipAddr3", "fiscalYear", "principalPlaceStateCode", "recipCatType",
             "asstCatType", "recipientCd", "majAgencyCat", "recFlag", "recipientCountryCode", "uri", "recipientStateCode",
             "exec1Fullname", "exec1Amount", "exec2Fullname", "exec2Amount", "exec3Fullname", "exec3Amount",
-            "exec4Fullname", "exec4Amount", "exec5Fullname", "exec5Amount", "lastModifiedDate"};
+            "exec4Fullname", "exec4Amount", "exec5Fullname", "exec5Amount", "lastModifiedDate", "geocodeCascade"};
 
         csvWriter.writeHeader(header);
         List<Grant> grants = repo.getGrants(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state);

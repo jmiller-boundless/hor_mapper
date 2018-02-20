@@ -10,7 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "grant_geocoded_usaspending6", schema = "spending")
+@Table(name = "grant_geocoded_usaspending7", schema = "spending")
 public class GrantView {
 
     @Id
@@ -33,6 +33,8 @@ public class GrantView {
     private String zip;
     private String zip4;
     private String congress;
+    @Column(name = "geocode_cascade")
+    private String geocodeCascade;
 
     @Column(name = "cdfp")
     private String cd_at_award;
@@ -320,6 +322,20 @@ public class GrantView {
      */
     public void setCongress(String congress) {
         this.congress = congress;
+    }
+
+    /**
+     * @return the geocodeCascade
+     */
+    public String getGeocodeCascade() {
+        return geocodeCascade;
+    }
+
+    /**
+     * @param geocodeCascade the geocodeCascade to set
+     */
+    public void setGeocodeCascade(String geocodeCascade) {
+        this.geocodeCascade = geocodeCascade;
     }
 
     /**
