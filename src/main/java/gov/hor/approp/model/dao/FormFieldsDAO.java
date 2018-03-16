@@ -10,30 +10,62 @@ import gov.hor.approp.model.Program;
 import gov.hor.approp.model.State;
 import gov.hor.approp.model.Subcommittee;
 import gov.hor.approp.model.csv.Grant;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Repository;
+import org.supercsv.io.ICsvBeanWriter;
 
 @Repository
 public class FormFieldsDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(FormFieldsDAO.class.getCanonicalName());
+
+    /**
+     * Fetch size to use for scrollable results from the db.
+     */
+    private static final int FETCH_SIZE = 1024;
+
     @PersistenceContext
-    private EntityManager em;
+    private EntityManager entityManager;
+
+    SessionFactory sessionFactory;
+
+    @Autowired
+    public FormFieldsDAO(EntityManagerFactory factory) {
+        // Only way I could get the Hibernate SessionFactory to load up.
+        // Need Hibernate for ScrollableResults so that we don't load millions of rows into memory when trying to write
+        // out the CSV reports.
+        // https://stackoverflow.com/a/25064080
+        if (factory.unwrap(SessionFactory.class) == null) {
+            throw new NullPointerException("factory is not a hibernate factory");
+        }
+        this.sessionFactory = factory.unwrap(SessionFactory.class);
+    }
 
     public List<Agency> getAgencies(List<String> subcommittee) {
         String query = "select distinct on(agency_name) agency_code, agency_name from programs.cfda_account WHERE (subcommittee in (:subcommittee)) or (:subfirst='unspecified') order by agency_name";
-        Query q = em.createNativeQuery(query, Agency.class);
+        Query q = entityManager.createNativeQuery(query, Agency.class);
         q.setParameter("subcommittee", subcommittee);
         String subfirst = isOnlyUnspecified(subcommittee);
         q.setParameter("subfirst", subfirst);
@@ -56,7 +88,7 @@ public class FormFieldsDAO {
     public List<Bureau> getBureaus(List<String> agency, List<String> subcommittee) {
         String query = "select distinct on(bureau_name) bureau_code, bureau_name from programs.cfda_account where bureau_name is not null "
                 + "AND (agency_name in (:agency) or :agencyfirst='unspecified') AND (subcommittee in (:subcommittee) or :subfirst='unspecified') order by bureau_name";
-        Query q = em.createNativeQuery(query, Bureau.class);
+        Query q = entityManager.createNativeQuery(query, Bureau.class);
         q.setParameter("agency", agency);
         String agencyfirst = isOnlyUnspecified(agency);
         q.setParameter("agencyfirst", agencyfirst);
@@ -77,7 +109,7 @@ public class FormFieldsDAO {
 
     public List<Subcommittee> getSubcommittees() {
         String query = "select distinct subcommittee from programs.cfda_account where subcommittee is not null order by subcommittee";
-        Query q = em.createNativeQuery(query, Subcommittee.class);
+        Query q = entityManager.createNativeQuery(query, Subcommittee.class);
         List<Subcommittee> subcommittees = q.getResultList();
         Subcommittee unspecified = new Subcommittee();
         unspecified.setSubcommittee("unspecified");
@@ -91,7 +123,7 @@ public class FormFieldsDAO {
                 + "AND (agency_name in (:agency) or :agencyfirst='unspecified') "
                 + "AND (subcommittee in (:subcommittee) or :subfirst='unspecified') "
                 + "order by cfda";
-        Query q = em.createNativeQuery(query, Program.class);
+        Query q = entityManager.createNativeQuery(query, Program.class);
         q.setParameter("bureau", bureau);
         String bureaufirst = isOnlyUnspecified(bureau);
         q.setParameter("bureaufirst", bureaufirst);
@@ -106,7 +138,7 @@ public class FormFieldsDAO {
 
     public List<State> getStates() {
         String query = "select name, stusps, st_envelope(the_geom) as the_geom from tiger.state order by name";
-        Query q = em.createNativeQuery(query, State.class);
+        Query q = entityManager.createNativeQuery(query, State.class);
         List<State> states = q.getResultList();
         State unspecified = new State();
         unspecified.setName("unspecified");
@@ -120,7 +152,7 @@ public class FormFieldsDAO {
                 + "from members.member m, members.term t, tiger.cd c, tiger.state s "
                 + "where m.id=t.memberid and c.cdfp=t.cdfp AND c.statefp=t.statefp AND s.statefp=t.statefp AND t.congress=:congress AND upper(lastname) like (:partial) "
                 + "and (s.name=:state or 'unspecified'=:state)";
-        Query q = em.createNativeQuery(query, Member.class);
+        Query q = entityManager.createNativeQuery(query, Member.class);
         q.setParameter("partial", "%" + partial.toUpperCase() + "%");
         q.setParameter("congress", congress);
         q.setParameter("state", state);
@@ -129,20 +161,20 @@ public class FormFieldsDAO {
 
     public List<Congress> getCongresses() {
         String query = "select distinct congress from members.term order by congress desc";
-        Query q = em.createNativeQuery(query, Congress.class);
+        Query q = entityManager.createNativeQuery(query, Congress.class);
         return q.getResultList();
     }
 
     public List<Program> getCfdaAutoComplete(String partial) {
         String query = "select cfda, program_title from programs.cfda_account where upper(program_title) like :partial order by program_title";
-        Query q = em.createNativeQuery(query, Program.class);
+        Query q = entityManager.createNativeQuery(query, Program.class);
         q.setParameter("partial", "%" + partial.toUpperCase() + "%");
         return q.getResultList();
     }
 
-    public List<String> getYears() {
-        String query = "select distinct fiscal_year from spending.grant_geocoded_usaspending7 order by fiscal_year desc";
-        Query q = em.createNativeQuery(query);
+    public List<Short> getYears() {
+        String query = "select distinct fiscal_year from spending.grant2 order by fiscal_year desc";
+        Query q = entityManager.createNativeQuery(query);
         return q.getResultList();
     }
 
@@ -178,21 +210,23 @@ public class FormFieldsDAO {
          + "left join members.term as t_current on gg.term_currentid = t_current.id "
          + "where gg.fiscal_year in (:fy)";*/
         String query = "select * from spending.award2 where fiscal_year in (:fy)";
-        Query q = em.createNativeQuery(query, Award.class);
+        Query q = entityManager.createNativeQuery(query, Award.class);
         q.setParameter("fy", fy);
         return q.getResultList();
     }
 
-    public List<GrantView> getGrantViews(List<String> fiscal_year,
+    public void getGrantViews(List<String> fiscal_year,
             List<String> subcommittee,
             List<String> agency_name,
             List<String> bureau_name,
             List<String> cfda,
-            List<String> state) {
-        CriteriaBuilder builder = em.getCriteriaBuilder();
+            List<String> state,
+            ICsvBeanWriter csvWriter,
+            String[] header) throws IOException {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<GrantView> query = builder.createQuery(GrantView.class);
         // TODO: Generate metamodel classes so these fields aren't hardcoded.
-//        Metamodel m = em.getMetamodel();
+//        Metamodel m = entityManager.getMetamodel();
 //        EntityType<GrantView> GrantView_ = m.entity(GrantView.class);
         Root<GrantView> grantView = query.from(GrantView.class);
         // Use fetch to join the tables in the same request. Otherwise JPA will make separate requests for each row.
@@ -231,19 +265,21 @@ public class FormFieldsDAO {
 
         query.where(builder.and(ps));
 
-        return em.createQuery(query).getResultList();
+        writeResults(query, csvWriter, header);
     }
 
-    public List<Grant> getGrants(List<String> fiscal_year,
+    public void getGrants(List<String> fiscal_year,
             List<String> subcommittee,
             List<String> agency_name,
             List<String> bureau_name,
             List<String> cfda,
-            List<String> state) {
-        CriteriaBuilder builder = em.getCriteriaBuilder();
+            List<String> state,
+            ICsvBeanWriter csvWriter,
+            String[] header) throws IOException {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Grant> query = builder.createQuery(Grant.class);
         // TODO: Generate metamodel classes so these fields aren't hardcoded.
-//        Metamodel m = em.getMetamodel();
+//        Metamodel m = entityManager.getMetamodel();
 //        EntityType<GrantView> GrantView_ = m.entity(GrantView.class);
         Root<Grant> grant = query.from(Grant.class);
         // Use fetch to join the tables in the same request. Otherwise JPA will make separate requests for each row.
@@ -279,7 +315,45 @@ public class FormFieldsDAO {
 
         query.where(builder.and(ps));
 
-        return em.createQuery(query).getResultList();
+        writeResults(query, csvWriter, header);
+    }
+
+    private <T> void writeResults(CriteriaQuery<T> query, ICsvBeanWriter writer, String[] header) throws IOException {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            // Use a transaction, it's important even though no documentation mentions it.
+            transaction = session.getTransaction();
+            transaction.begin();
+
+            writeResults(query, writer, header, session);
+
+            transaction.commit();
+        } catch (RuntimeException e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+    }
+
+    private <T> void writeResults(CriteriaQuery<T> query, ICsvBeanWriter writer, String[] header,
+            Session session) throws IOException {
+        org.hibernate.query.Query createQuery = session.createQuery(query);
+        createQuery.setFetchSize(FETCH_SIZE).setReadOnly(true).setCacheable(false);
+        try (ScrollableResults results = createQuery.scroll(ScrollMode.FORWARD_ONLY)) {
+
+            int count = 0;
+            while (results.next()) {
+                if (++count > 0 && count % FETCH_SIZE == 0) {
+                    LOGGER.log(Level.FINER, "Scrollable Results fetched {0} entities. Flushing and clearing the session.", count);
+                    // Need to flush and clear to prevent a heap overflow.
+                    session.flush();
+                    session.clear();
+                }
+
+                writer.write(results.get(0), header);
+            }
+        }
     }
 
     public boolean includeList(List<String> list) {

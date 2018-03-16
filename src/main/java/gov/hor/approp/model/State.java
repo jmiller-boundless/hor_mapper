@@ -5,10 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-
-import com.bedatadriven.jackson.datatype.jts.GeometryDeserializer;
-import com.bedatadriven.jackson.datatype.jts.GeometrySerializer;
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometryDeserializer;
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -24,8 +22,6 @@ public class State {
     @Column(name = "stusps")
     private String abbrev;
 
-    @Column(name = "the_geom", columnDefinition = "Geometry")
-    @Type(type = "org.hibernate.spatial.GeometryType")
     private Geometry the_geom;
 
     public String getName() {

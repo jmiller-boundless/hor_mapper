@@ -1,14 +1,11 @@
 package gov.hor.approp.model;
 
-import javax.persistence.Column;
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometryDeserializer;
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-
-import com.bedatadriven.jackson.datatype.jts.GeometryDeserializer;
-import com.bedatadriven.jackson.datatype.jts.GeometrySerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -23,9 +20,6 @@ public class Member {
     private String lastname;
     private String firstname;
     private String middlename;
-
-    @Column(name = "the_geom", columnDefinition = "Geometry")
-    @Type(type = "org.hibernate.spatial.GeometryType")
     private Geometry the_geom;
 
     public int getId() {
