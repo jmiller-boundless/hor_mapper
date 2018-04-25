@@ -1,11 +1,13 @@
 package gov.hor.approp.model;
 
+import static gov.hor.approp.model.Program.CFDA_SCHEMA;
+import static gov.hor.approp.model.Program.CFDA_TABLE;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "cfda_account", schema = "programs")
+@Table(name = CFDA_TABLE, schema = CFDA_SCHEMA)
 public class Subcommittee {
 
     @Id
@@ -18,5 +20,4 @@ public class Subcommittee {
     public void setSubcommittee(String subcommittee) {
         this.subcommittee = subcommittee;
     }
-
 }

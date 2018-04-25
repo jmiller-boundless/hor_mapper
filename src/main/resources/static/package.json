@@ -21,6 +21,7 @@
     "angular-sanitize": "^1.6.0",
     "bootstrap-css-only": "^3.3.7",
     "lodash": "^4.17.2",
-    "openlayers": "^3.19.1"
+    "openlayers": "^3.19.1",
+    "ui-select": "^0.19.8"
   }
 }

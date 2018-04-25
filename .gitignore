@@ -3,3 +3,4 @@
 /src/main/resources/static/yarn.lock
 /target/
 .DS_Store
+generated

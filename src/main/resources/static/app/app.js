@@ -1,5 +1,3 @@
 (function(angular) {
-  angular.module("myApp.controllers", []);
-  angular.module("myApp.services", []);
-  angular.module("myApp", ["ngResource","myApp.controllers", "myApp.services","ui.bootstrap"]);
+  var app = angular.module("myApp", ["ngResource", "ui.bootstrap", 'ngSanitize', 'ui.select']);
 }(angular));

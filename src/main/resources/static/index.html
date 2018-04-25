@@ -1,135 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>HAL</title>
-    <link rel="stylesheet" href="./node_modules/bootstrap-css-only/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="./node_modules/openlayers/dist/ol.css" />
-    <link rel="stylesheet" href="./styles/main.css" />
-  <a>
-      <img ng-src="http://upload.wikimedia.org/wikipedia/commons/thumb/{{match.model.flag}}" width="16">
-      <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
-  </a>
-</script>
+<head>
+  <title>HAL</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="./node_modules/bootstrap-css-only/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./node_modules/openlayers/dist/ol.css" />
+  <link rel="stylesheet" href="./node_modules/ui-select/dist/select.min.css" />
+  <link rel="stylesheet" href="./styles/main.css" />
+</head>
 
-<script type="text/ng-template" id="customPopupTemplate.html">
-  <div class="custom-popup-wrapper"
-     ng-style="{top: position().top+'px', left: position().left+'px'}"
-     style="display: block;"
-     ng-show="isOpen() && !moveInProgress"
-     aria-hidden="{{!isOpen()}}">
-    <p class="message">select location from drop down.</p>
+<body ng-app="myApp" ng-cloak>
 
-    <ul class="dropdown-menu" role="listbox">
-        <li ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }"
-            ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
-            <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
-        </li>
-    </ul>
-  </div>
-</script>
-
-
-  </head>
-  <body ng-app="myApp">
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-header">
+    <div ng-controller="AppController" class="main">
+      <div class="my-row top" >
+        <div class="header navbar-inverse">
           <div class="logo"></div>
-          <a class="navbar-brand" href="#">HAL</a>
+          <span class="navbar-brand">HAL</span>
         </div>
-        <div id="navbar" class="collapse navbar-collapse">
-        </div><!--/.nav-collapse -->
-    </nav>
-    <div class="main" ng-controller="AppController">
-      <div class="top">
-        <div id="map" class="map"></div>
-        <div class="map loading" ng-if="wmsLoading">
-          <img src="./ajax-loader.gif" alt="Loading...">
-        </div>
-        <div class="tools">
-          <h4>Zoom to District</h4>
-          <form>
-            <div class="form-group">
-              <label for="congressSelect">Congress</label>
-              <select class="form-control" name="congressSelect" id="congressSelect" ng-model="cs"
-                  ng-options="c as c.congress for c in congresses">
-              </select>
+        <div class="not-header-container">
+
+          <div class="map-container">
+            <div id="map" class="map"></div>
+            <div class="map-loading" ng-if="wmsLoading">
+              <img src="./ajax-loader.gif" alt="Loading...">
             </div>
-            <div class="form-group">
-              <label for="stateSelect">State</label>
-              <select class="form-control" name="stateSelect" id="stateSelect" ng-model="stateSelect"
-                  ng-options="s as s.name for s in states">
-              </select>
+
+            <div class="tools">
+              <h4>District Filters</h4>
+              <form>
+                <div class="form-group">
+                  <div class="congress-group">
+                    <label for="congressSelect">Congress</label>
+
+                    <label class="radio-inline">
+                      <input type="radio" ng-model="data.isMemberAtAward" ng-value="false" />Current
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" ng-model="data.isMemberAtAward" ng-value="true" />At Award
+                    </label>
+                  </div>
+
+                  <select class="form-control" name="congressSelect" id="congressSelect"
+                      ng-model="data.congress" ng-disabled="!data.isMemberAtAward"
+                      ng-options="c as c.congress for c in congresses">
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="stateSelect">State</label>
+                  <ui-select multiple ng-model="data.state" name="stateSelect" id="stateSelect" theme="bootstrap" sortable="true"
+                      append-to-body="true" close-on-select="true">
+                    <ui-select-match placeholder="Select state...">{{$item.abbrev}}</ui-select-match>
+                    <ui-select-choices repeat="s in states | filter: {'$': $select.search}">
+                      <div ng-bind-html="s.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                  </ui-select>
+                </div>
+                <div class="form-group">
+                  <label for="memberSelect">Name</label>
+                  <ui-select multiple ng-model="data.memberid" name="memberSelect" id="memberSelect" theme="bootstrap" sortable="true"
+                      append-to-body="true" close-on-select="true">
+                    <ui-select-match placeholder="Select member...">{{$item.firstname}} {{$item.lastname}}</ui-select-match>
+                    <ui-select-choices repeat="m in members | filter: {'$': $select.search}"
+                        minimum-input-length="0"
+                        refresh="memberAutoComplete($select.search, $select)" refresh-delay="100">
+                      <span ng-bind-html="m.firstname | highlight: $select.search"></span>
+                      <span ng-bind-html="m.lastname | highlight: $select.search"></span>
+                    </ui-select-choices>
+                  </ui-select>
+                </div>
+              </form>
+              <h4>District Information</h4>
+              <div class="loading" ng-if="loadingFeatureInfo">
+                <img src="./ajax-loader.gif" alt="Loading..." title="Loading...">
+              </div>
+              <div ng-if="featureInfo" ng-cloak>
+                <h5>Rep. {{featureInfo.firstname}} {{featureInfo.lastname}}</h5>
+                <h6>{{featureInfo.party.slice(0,1).toUpperCase()}} - {{featureInfo.state}} {{featureInfo.cdfp}}</h6>
+                <p>Awarded {{featureInfo.sum | currency}} for {{featureInfo.cfda_count_sub}} grants</p>
+              </div>
             </div>
-            <div class="form-group">
-            <label>Name</label>
-              <input type="text" ng-model="asyncSelected" placeholder="Members" uib-typeahead="address.lastname+', '+address.firstname for address in getLocation($viewValue)" typeahead-loading="loadingLocations" typeahead-no-results="noResults" typeahead-on-select="onSelect($item, $model, $label)" class="form-control">
-            </div>
-          </form>
-          <h4>District Information</h4>
-          <div class="loading" ng-if="loadingFeatureInfo">
-            <img src="./ajax-loader.gif" alt="Loading...">
-          </div>
-          <div ng-if="featureInfo" ng-cloak>
-            <h5>Rep. {{featureInfo.firstname}} {{featureInfo.lastname}}</h5>
-            <h6>{{featureInfo.party.slice(0,1).toUpperCase()}} - {{featureInfo.state}} {{featureInfo.cdfp}}</h6>
-            <p>Awarded {{featureInfo.sum | currency}} for {{featureInfo.cfda_count_sub}} grants<p>
           </div>
         </div>
       </div>
 
-      <div class="filters">
-        <h2>Data Filters</h2>
-        <div class="filter-container">
-          <div class="form-group" id="year-group">
-            <label for="yearSelect">Year</label>
-            <select multiple name="yearSelect" class="form-control" id="yearSelect" ng-model="data.year">
-                <option ng-repeat="year in years" value="{{year}}">{{year}}</option>
-            </select>
-          </div>
-          <div class="form-group" id="subcommittee-group">
-            <label for="subcommitteeSelect">Subcommittee</label>
-            <select class="form-control" multiple name="subcommitteeSelect" id="subcommitteeSelect" ng-model="data.subcommitteeSelect" ng-change="subcommitteeUpdate()">
+      <div class="my-row bottom">
+        <div class="container-fluid">
+          <h4 class="title">Data Filters</h4>
+          <div class="filters">
+            <div class="form-group" id="year-group">
+              <label for="yearSelect">Year</label>
+              <select multiple name="yearSelect" class="form-control" id="yearSelect" ng-model="data.fiscal_year"
+                  ng-options="year as year for year in fiscal_years track by year">
+              </select>
+            </div>
+            <div class="form-group" id="subcommittee-group">
+              <label for="subcommitteeSelect">Subcommittee</label>
+              <select class="form-control" multiple name="subcommitteeSelect" id="subcommitteeSelect" ng-model="data.subcommittee" ng-change="subcommitteeUpdate()">
                 <option ng-repeat="subcommittee in subcommittees" value="{{subcommittee.subcommittee}}">{{subcommittee.subcommittee}}</option>
-            </select>
-          </div>
-          <div class="form-group" id="agency-group">
-            <label  for="agencySelect">Agency</label>
-            <select class="form-control" multiple name="agencySelect" id="agencySelect" ng-model="data.agencySelect" ng-change="agencyUpdate()">
+              </select>
+            </div>
+            <div class="form-group" id="agency-group">
+              <label  for="agencySelect">Agency</label>
+              <select class="form-control" multiple name="agencySelect" id="agencySelect" ng-model="data.agency" ng-change="agencyUpdate()">
                 <option ng-repeat="agency in agencies" value="{{agency.agencyName}}">{{agency.agencyName}}</option>
-            </select>
-          </div>
-          <div class="form-group" id="bureau-group">
-            <label  for="bureauSelect">Bureau</label>
-            <select class="form-control" multiple name="bureauSelect" id="bureauSelect" ng-model="data.bureauSelect" ng-change="bureauUpdate()">
+              </select>
+            </div>
+            <div class="form-group" id="bureau-group">
+              <label  for="bureauSelect">Bureau</label>
+              <select class="form-control" multiple name="bureauSelect" id="bureauSelect" ng-model="data.bureau" ng-change="bureauUpdate()">
                 <option ng-repeat="bureau in bureaus" value="{{bureau.bureauName}}">{{bureau.bureauName}}</option>
-            </select>
+              </select>
+            </div>
+            <div class="form-group" id="program-group">
+              <label for="programSelect">Program</label>
+              <select class="form-control" multiple name="programSelect" id="programSelect" ng-model="data.cfda">
+                <option ng-repeat="program in cfdas" value="{{program.cfda}}">{{program.cfda}} {{program.title}}</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group" id="program-group">
-            <label for="programSelect">Program</label>
-            <select class="form-control" multiple name="programSelect" id="programSelect" ng-model="data.programSelect">
-                <option ng-repeat="program in programs" value="{{program.cfda}}">{{program.cfda}} {{program.title}}</option>
-            </select>
-          </div>
-        </div>
-        <div class="buttons">
-          <button class="btn btn-lg btn-primary" ng-click="buildParam();">Filter</button>
-          <a class="btn btn-lg btn-primary" ng-href="{{ getGrantsViewCSV() }}">Materialized View</a>
-          <a class="btn btn-lg btn-primary" ng-href="{{ getGrantsCSV() }}">Entire USA Spending Record</a>
-        </div>
+          <div class="buttons">
+            <button class="btn btn-primary" ng-click="buildParam();">Filter</button>
+            <a class="btn btn-primary" ng-href="{{ getCSV('getGrantsViewCSV') }}">Materialized View</a>
+            <a class="btn btn-primary" ng-href="{{ getCSV('getGrantsCSV') }}">Entire USA Spending Record</a>
           </div>
         </div>
       </div>
     </div>
-  <script src="./node_modules/openlayers/dist/ol.js"></script>
-  <script src="https://cdn.jsdelivr.net/lodash/4.17.2/lodash.min.js"></script>
-  <script type="text/javascript" src="./node_modules/angular/angular.min.js"></script>
-  <script type="text/javascript" src="./node_modules/angular-resource/angular-resource.min.js"></script>
-  <script type="text/javascript" src="./node_modules/angular-sanitize/angular-sanitize.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.js"></script>
-  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.2.js"></script>
-  <script type="text/javascript" src="./app/app.js"></script>
-  <script type="text/javascript" src="./app/controllers.js"></script>
-  <script type="text/javascript" src="./app/services.js"></script>
-  <script type="text/ng-template" id="customTemplate.html">
-  </body>
+
+<script src="./node_modules/openlayers/dist/ol.js"></script>
+<script src="https://cdn.jsdelivr.net/lodash/4.17.2/lodash.min.js"></script>
+<script type="text/javascript" src="./node_modules/angular/angular.min.js"></script>
+<script type="text/javascript" src="./node_modules/angular-resource/angular-resource.min.js"></script>
+<script type="text/javascript" src="./node_modules/angular-sanitize/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="./node_modules/ui-select/dist/select.min.js"></script>
+<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.3.2.js"></script>
+<script type="text/javascript" src="./app/app.js"></script>
+<script type="text/javascript" src="./app/services.js"></script>
+<script type="text/javascript" src="./app/controllers.js"></script>
+</body>
 </html>

@@ -6,14 +6,18 @@ import gov.hor.approp.model.Bureau;
 import gov.hor.approp.model.Congress;
 import gov.hor.approp.model.csv.GrantView;
 import gov.hor.approp.model.Member;
+import gov.hor.approp.model.Member_;
 import gov.hor.approp.model.Program;
+import static gov.hor.approp.model.Program.CFDA_NAME;
 import gov.hor.approp.model.State;
 import gov.hor.approp.model.Subcommittee;
+import gov.hor.approp.model.Term;
+import gov.hor.approp.model.Term_;
 import gov.hor.approp.model.csv.Grant;
+import static gov.hor.approp.model.csv.Grant.GRANT_NAME;
 import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +28,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.hibernate.ScrollMode;
@@ -46,6 +51,11 @@ public class FormFieldsDAO {
      */
     private static final int FETCH_SIZE = 1024;
 
+    /**
+     * Value for specifying that you want all results for a particular filter.
+     */
+    public static final String ALL_VALUE = "All";
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -64,75 +74,102 @@ public class FormFieldsDAO {
     }
 
     public List<Agency> getAgencies(List<String> subcommittee) {
-        String query = "select distinct on(agency_name) agency_code, agency_name from programs.cfda_account WHERE (subcommittee in (:subcommittee)) or (:subfirst='unspecified') order by agency_name";
+        String query = "select distinct on(agency_name) agency_name from " + CFDA_NAME + " WHERE agency_name is not null ";
+
+        if (includeList(subcommittee)) {
+            query += " AND subcommittee in (:subcommittee) ";
+        }
+
+        query += " order by agency_name";
+
         Query q = entityManager.createNativeQuery(query, Agency.class);
-        q.setParameter("subcommittee", subcommittee);
-        String subfirst = isOnlyUnspecified(subcommittee);
-        q.setParameter("subfirst", subfirst);
+
+        if (includeList(subcommittee)) {
+            q.setParameter("subcommittee", subcommittee);
+        }
+
         List<Agency> agencies = q.getResultList();
+
         Agency unspec = new Agency();
-        unspec.setAgency_code("unspecified");
-        unspec.setAgency_name("unspecified");
+        unspec.setAgency_name(ALL_VALUE);
         agencies.add(0, unspec);
+
         return agencies;
     }
 
-    private String isOnlyUnspecified(List<String> subcommittee) {
-        String out = "userchoice";
-        if (subcommittee.size() == 1 && subcommittee.get(0).equals("unspecified")) {
-            out = "unspecified";
-        }
-        return out;
-    }
-
     public List<Bureau> getBureaus(List<String> agency, List<String> subcommittee) {
-        String query = "select distinct on(bureau_name) bureau_code, bureau_name from programs.cfda_account where bureau_name is not null "
-                + "AND (agency_name in (:agency) or :agencyfirst='unspecified') AND (subcommittee in (:subcommittee) or :subfirst='unspecified') order by bureau_name";
+        String query = "select distinct on(bureau_name) bureau_name from " + CFDA_NAME + " where bureau_name is not null ";
+
+        if (includeList(subcommittee)) {
+            query += " AND subcommittee in (:subcommittee) ";
+        }
+
+        if (includeList(agency)) {
+            query += " AND agency_name in (:agency) ";
+        }
+
+        query += " order by bureau_name";
+
         Query q = entityManager.createNativeQuery(query, Bureau.class);
-        q.setParameter("agency", agency);
-        String agencyfirst = isOnlyUnspecified(agency);
-        q.setParameter("agencyfirst", agencyfirst);
-        q.setParameter("subcommittee", subcommittee);
-        String subfirst = isOnlyUnspecified(subcommittee);
-        q.setParameter("subfirst", subfirst);
+
+        if (includeList(subcommittee)) {
+            q.setParameter("subcommittee", subcommittee);
+        }
+
+        if (includeList(agency)) {
+            q.setParameter("agency", agency);
+        }
+
         List<Bureau> bureaus = q.getResultList();
+
         Bureau unspecified = new Bureau();
-        unspecified.setBureau_code("unspecified");
-        unspecified.setBureau_name("unspecified");
+        unspecified.setBureau_name(ALL_VALUE);
         bureaus.add(0, unspecified);
+
         return bureaus;
     }
 
-    private List<String> commaListToList(String subcommittee) {
-        return Arrays.asList(subcommittee.split(","));
-    }
-
     public List<Subcommittee> getSubcommittees() {
-        String query = "select distinct subcommittee from programs.cfda_account where subcommittee is not null order by subcommittee";
+        String query = "select distinct subcommittee from " + CFDA_NAME + " where subcommittee is not null order by subcommittee";
         Query q = entityManager.createNativeQuery(query, Subcommittee.class);
         List<Subcommittee> subcommittees = q.getResultList();
         Subcommittee unspecified = new Subcommittee();
-        unspecified.setSubcommittee("unspecified");
+        unspecified.setSubcommittee(ALL_VALUE);
         subcommittees.add(0, unspecified);
         return subcommittees;
     }
 
     public List<Program> getPrograms(List<String> bureau, List<String> subcommittee, List<String> agency) {
-        String query = "select cfda, program_title from programs.cfda_account "
-                + "where (bureau_name in (:bureau) or :bureaufirst='unspecified') "
-                + "AND (agency_name in (:agency) or :agencyfirst='unspecified') "
-                + "AND (subcommittee in (:subcommittee) or :subfirst='unspecified') "
-                + "order by cfda";
+        String query = "select cfda, program_title from " + CFDA_NAME + " WHERE cfda is not null ";
+
+        if (includeList(subcommittee)) {
+            query += " AND subcommittee in (:subcommittee) ";
+        }
+
+        if (includeList(agency)) {
+            query += " AND agency_name in (:agency) ";
+        }
+
+        if (includeList(bureau)) {
+            query += " AND bureau_name in (:bureau) ";
+        }
+
+        query += " order by cfda";
+
         Query q = entityManager.createNativeQuery(query, Program.class);
-        q.setParameter("bureau", bureau);
-        String bureaufirst = isOnlyUnspecified(bureau);
-        q.setParameter("bureaufirst", bureaufirst);
-        q.setParameter("agency", agency);
-        String agencyfirst = isOnlyUnspecified(agency);
-        q.setParameter("agencyfirst", agencyfirst);
-        q.setParameter("subcommittee", subcommittee);
-        String subfirst = isOnlyUnspecified(subcommittee);
-        q.setParameter("subfirst", subfirst);
+
+        if (includeList(subcommittee)) {
+            q.setParameter("subcommittee", subcommittee);
+        }
+
+        if (includeList(agency)) {
+            q.setParameter("agency", agency);
+        }
+
+        if (includeList(bureau)) {
+            q.setParameter("bureau", bureau);
+        }
+
         return q.getResultList();
     }
 
@@ -140,10 +177,6 @@ public class FormFieldsDAO {
         String query = "select name, stusps, st_envelope(the_geom) as the_geom from tiger.state order by name";
         Query q = entityManager.createNativeQuery(query, State.class);
         List<State> states = q.getResultList();
-        State unspecified = new State();
-        unspecified.setName("unspecified");
-        unspecified.setAbbrev("unspecified");
-        states.add(0, unspecified);
         return states;
     }
 
@@ -159,6 +192,34 @@ public class FormFieldsDAO {
         return q.getResultList();
     }
 
+    public List<Member> getMemberAutoComplete(String partial, List<Integer> congress, List<String> state) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Member> query = builder.createQuery(Member.class);
+        Root<Member> member = query.from(Member.class);
+        Join<Member, Term> terms = (Join<Member, Term>) member.fetch(Member_.terms);
+
+        ArrayList<Predicate> predicates = new ArrayList<>();
+
+        if (partial != null && !partial.isEmpty()) {
+            Predicate lastname = builder.like(builder.upper(member.get(Member_.lastname)), '%' + partial.toUpperCase() + '%');
+            Predicate firstname = builder.like(builder.upper(member.get(Member_.firstname)), '%' + partial.toUpperCase() + '%');
+            predicates.add(builder.or(lastname, firstname));
+        }
+
+        if (includeIntegerList(congress)) {
+            predicates.add(terms.get(Term_.congress).in(congress));
+        }
+
+        if (includeList(state)) {
+            predicates.add(terms.get(Term_.state).in(state));
+        }
+
+        Predicate[] ps = predicates.toArray(new Predicate[predicates.size()]);
+
+        query.where(builder.and(ps)).distinct(true).orderBy(builder.asc(member.get(Member_.lastname)), builder.asc(member.get(Member_.firstname)));
+        return entityManager.createQuery(query).getResultList();
+    }
+
     public List<Congress> getCongresses() {
         String query = "select distinct congress from members.term order by congress desc";
         Query q = entityManager.createNativeQuery(query, Congress.class);
@@ -166,14 +227,14 @@ public class FormFieldsDAO {
     }
 
     public List<Program> getCfdaAutoComplete(String partial) {
-        String query = "select cfda, program_title from programs.cfda_account where upper(program_title) like :partial order by program_title";
+        String query = "select cfda, program_title from " + CFDA_NAME + " where upper(program_title) like :partial order by program_title";
         Query q = entityManager.createNativeQuery(query, Program.class);
         q.setParameter("partial", "%" + partial.toUpperCase() + "%");
         return q.getResultList();
     }
 
     public List<Short> getYears() {
-        String query = "select distinct fiscal_year from spending.grant2 order by fiscal_year desc";
+        String query = "select distinct fiscal_year from " + GRANT_NAME + " order by fiscal_year desc";
         Query q = entityManager.createNativeQuery(query);
         return q.getResultList();
     }
@@ -221,6 +282,9 @@ public class FormFieldsDAO {
             List<String> bureau_name,
             List<String> cfda,
             List<String> state,
+            List<Integer> memberid,
+            Integer congress,
+            Boolean isMemberAtAward,
             ICsvBeanWriter csvWriter,
             String[] header) throws IOException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -261,6 +325,16 @@ public class FormFieldsDAO {
             predicates.add(grantView.get("state").in(state));
         }
 
+        if (memberid != null && !memberid.isEmpty()) {
+            if (isMemberAtAward != null && isMemberAtAward) {
+                // We want to filter by the Members at the award of the grant.
+                predicates.add(grantView.get("congress").in(congress));
+                predicates.add(grantView.get("awardMember").get("id").in(memberid));
+            } else {
+                predicates.add(grantView.get("currentMember").get("id").in(memberid));
+            }
+        }
+
         Predicate[] ps = predicates.toArray(new Predicate[predicates.size()]);
 
         query.where(builder.and(ps));
@@ -274,6 +348,9 @@ public class FormFieldsDAO {
             List<String> bureau_name,
             List<String> cfda,
             List<String> state,
+            List<Integer> memberid,
+            Integer congress,
+            Boolean isMemberAtAward,
             ICsvBeanWriter csvWriter,
             String[] header) throws IOException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -309,6 +386,16 @@ public class FormFieldsDAO {
 
         if (includeList(state)) {
             predicates.add(grant.get("grantView").<String>get("state").in(state));
+        }
+
+        if (memberid != null && !memberid.isEmpty()) {
+            if (isMemberAtAward != null && isMemberAtAward) {
+                // We want to filter by the Members at the award of the grant.
+                predicates.add(grant.get("grantView").get("congress").in(congress));
+                predicates.add(grant.get("grantView").get("awardMember").get("id").in(memberid));
+            } else {
+                predicates.add(grant.get("grantView").get("currentMember").get("id").in(memberid));
+            }
         }
 
         Predicate[] ps = predicates.toArray(new Predicate[predicates.size()]);
@@ -357,7 +444,11 @@ public class FormFieldsDAO {
     }
 
     public boolean includeList(List<String> list) {
-        return list != null && list.size() > 0 && !(list.size() == 1 && list.get(0).equals("unspecified"));
+        return list != null && list.size() > 0 && !(list.size() == 1 && list.get(0).equals(ALL_VALUE));
+    }
+
+    public boolean includeIntegerList(List<Integer> list) {
+        return list != null && list.size() > 0;
     }
 
 }

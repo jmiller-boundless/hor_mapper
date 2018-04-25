@@ -5,23 +5,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import static gov.hor.approp.model.Program.CFDA_SCHEMA;
+import static gov.hor.approp.model.Program.CFDA_TABLE;
 
 @Entity
-@Table(name = "cfda_account", schema = "programs")
+@Table(name = CFDA_TABLE, schema = CFDA_SCHEMA)
 public class Agency {
 
     @Id
-    private String agency_code;
     private String agency_name;
-
-    @JsonProperty("agencyCode")
-    public String getAgency_code() {
-        return agency_code;
-    }
-
-    public void setAgency_code(String agency_code) {
-        this.agency_code = agency_code;
-    }
 
     @JsonProperty("agencyName")
     public String getAgency_name() {
@@ -31,5 +23,4 @@ public class Agency {
     public void setAgency_name(String agency_name) {
         this.agency_name = agency_name;
     }
-
 }

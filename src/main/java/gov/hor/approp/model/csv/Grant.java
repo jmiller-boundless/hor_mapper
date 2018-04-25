@@ -1,5 +1,7 @@
 package gov.hor.approp.model.csv;
 
+import static gov.hor.approp.model.csv.Grant.GRANT_SCHEMA;
+import static gov.hor.approp.model.csv.Grant.GRANT_TABLE;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -19,8 +21,12 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Entity
-@Table(name = "grant2", schema = "spending")
+@Table(name = GRANT_TABLE, schema = GRANT_SCHEMA)
 public class Grant implements Serializable {
+
+    public static final String GRANT_SCHEMA = "spending";
+    public static final String GRANT_TABLE = "grant2";
+    public static final String GRANT_NAME = GRANT_SCHEMA + "." + GRANT_TABLE;
 
     private static final long serialVersionUID = 1L;
     @Id

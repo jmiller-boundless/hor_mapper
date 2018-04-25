@@ -1,5 +1,7 @@
 package gov.hor.approp.model.csv;
 
+import static gov.hor.approp.model.csv.GrantView.GRANTVIEW_SCHEMA;
+import static gov.hor.approp.model.csv.GrantView.GRANTVIEW_TABLE;
 import java.sql.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,8 +12,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "grant_geocoded_usaspending7", schema = "spending")
+@Table(name = GRANTVIEW_TABLE, schema = GRANTVIEW_SCHEMA)
 public class GrantView {
+
+    public static final String GRANTVIEW_SCHEMA = "spending";
+    public static final String GRANTVIEW_TABLE = "grant_geocoded_usaspending8";
+    public static final String GRANTVIEW_NAME = GRANTVIEW_SCHEMA + "." + GRANTVIEW_TABLE;
 
     @Id
     private Integer gid;
@@ -57,6 +63,11 @@ public class GrantView {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "term_currentid")
     private TermJoin currentTerm;
+
+    private String lat;
+    private String lon;
+    @Column(name = "project_description")
+    private String projectDescription;
 
     /**
      * @return the gid
@@ -408,6 +419,48 @@ public class GrantView {
         } else {
             return null;
         }
+    }
+
+    /**
+     * @return the lat
+     */
+    public String getLat() {
+        return lat;
+    }
+
+    /**
+     * @param lat the lat to set
+     */
+    public void setLat(String lat) {
+        this.lat = lat;
+    }
+
+    /**
+     * @return the lon
+     */
+    public String getLon() {
+        return lon;
+    }
+
+    /**
+     * @param lon the lon to set
+     */
+    public void setLon(String lon) {
+        this.lon = lon;
+    }
+
+    /**
+     * @return the projectDescription
+     */
+    public String getProjectDescription() {
+        return projectDescription;
+    }
+
+    /**
+     * @param projectDescription the projectDescription to set
+     */
+    public void setProjectDescription(String projectDescription) {
+        this.projectDescription = projectDescription;
     }
 
 }

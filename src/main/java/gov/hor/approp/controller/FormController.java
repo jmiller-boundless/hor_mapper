@@ -33,25 +33,31 @@ public class FormController {
     @Autowired
     private FormFieldsDAO repo;
 
-    @RequestMapping(value = "/agencies/{subcommittee}", method = RequestMethod.GET)
-    public @ResponseBody
-    List<Agency> getAgencies(
-            @PathVariable List<String> subcommittee) {
-        List<Agency> agencies = repo.getAgencies(subcommittee);
-        return agencies;
-    }
-
-    @RequestMapping(value = "/bureaus/{subcommittee}/{agency}", method = RequestMethod.GET)
-    public @ResponseBody
-    List<Bureau> getBureaus(@PathVariable List<String> agency, @PathVariable List<String> subcommittee) {
-        List<Bureau> bureaus = repo.getBureaus(agency, subcommittee);
-        return bureaus;
-    }
-
     @RequestMapping(value = "/subcommittees", method = RequestMethod.GET)
     public @ResponseBody
     List<Subcommittee> getSubcommittees() {
         List<Subcommittee> subs = repo.getSubcommittees();
+        return subs;
+    }
+
+    @RequestMapping(value = "/agencies", method = RequestMethod.GET)
+    public @ResponseBody
+    List<Agency> getAgencies(@RequestParam List<String> subcommittee) {
+        List<Agency> agencies = repo.getAgencies(subcommittee);
+        return agencies;
+    }
+
+    @RequestMapping(value = "/bureaus", method = RequestMethod.GET)
+    public @ResponseBody
+    List<Bureau> getBureaus(@RequestParam List<String> agency, @RequestParam List<String> subcommittee) {
+        List<Bureau> bureaus = repo.getBureaus(agency, subcommittee);
+        return bureaus;
+    }
+
+    @RequestMapping(value = "/programs", method = RequestMethod.GET)
+    public @ResponseBody
+    List<Program> getPrograms(@RequestParam List<String> bureau, @RequestParam List<String> agency, @RequestParam List<String> subcommittee) {
+        List<Program> subs = repo.getPrograms(bureau, subcommittee, agency);
         return subs;
     }
 
@@ -65,37 +71,12 @@ public class FormController {
     @RequestMapping(value = "/members", method = RequestMethod.GET)
     public @ResponseBody
     List<Member> getMembers(@RequestParam String partial,
-            @RequestParam Integer congress, @RequestParam String state) {
+            @RequestParam(required = false) List<Integer> congress,
+            @RequestParam(required = false) List<String> state) {
         List<Member> subs = repo.getMemberAutoComplete(partial, congress, state);
         return subs;
     }
 
-    /*
-     * @RequestMapping(value = "/programs", method = RequestMethod.GET) public
-     *
-     * @ResponseBody List<Program> getPrograms(@RequestParam String partial) {
-     * List<Program> subs = repo.getCfdaAutoComplete(partial); return subs; }
-     */
-    @RequestMapping(value = "/programs/{subcommittee}/{agency}/{bureau}", method = RequestMethod.GET)
-    public @ResponseBody
-    List<Program> getPrograms(@PathVariable List<String> bureau, @PathVariable List<String> agency, @PathVariable List<String> subcommittee) {
-        List<Program> subs = repo.getPrograms(bureau, subcommittee, agency);
-        return subs;
-    }
-
-    /*   String csvFileName = "dvof.csv";
-     response.setContentType("text/csv");
-     String headerKey = "Content-Disposition";
-     String headerValue = String.format("attachment; filename=\"%s\"",
-     csvFileName);
-     response.setHeader(headerKey, headerValue);
-     try {
-     response.getWriter().print(csv);
-     } catch (IOException e) {
-     // TODO Auto-generated catch block
-     e.printStackTrace();
-     }
-     }*/
     @RequestMapping(value = "/downloadCSV/{fy}")
     public void downloadCSV(@PathVariable List<String> fy, HttpServletResponse response) throws IOException {
         String csvFileName = "programs.csv";
@@ -135,6 +116,9 @@ public class FormController {
             @RequestParam(required = false) List<String> bureau_name,
             @RequestParam(required = false) List<String> cfda,
             @RequestParam(required = false) List<String> state,
+            @RequestParam(required = false) List<Integer> memberid,
+            @RequestParam(required = false) Integer congress,
+            @RequestParam(required = false) Boolean isMemberAtAward,
             HttpServletResponse response) throws IOException {
         String csvFileName = "materializedview.csv";
 
@@ -150,10 +134,11 @@ public class FormController {
             String[] header = {"gid", "unique_transaction_id", "award_date", "award_amount", "award_type",
                 "fiscal_year", "cfda", "subcommittee", "program_title", "agency_name", "bureau_name",
                 "recipient_name", "address", "city", "state", "statefp", "zip", "zip4", "congress",
-                "cd_at_award", "member_at_award", "party_at_award", "cd_current", "member_current", "party_current", "geocodeCascade"};
+                "cd_at_award", "member_at_award", "party_at_award", "cd_current", "member_current", "party_current",
+                "lat", "lon", "projectDescription", "geocodeCascade"};
 
             csvWriter.writeHeader(header);
-            repo.getGrantViews(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state, csvWriter, header);
+            repo.getGrantViews(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state, memberid, congress, isMemberAtAward, csvWriter, header);
         }
     }
 
@@ -164,6 +149,9 @@ public class FormController {
             @RequestParam(required = false) List<String> bureau_name,
             @RequestParam(required = false) List<String> cfda,
             @RequestParam(required = false) List<String> state,
+            @RequestParam(required = false) List<Integer> memberid,
+            @RequestParam(required = false) Integer congress,
+            @RequestParam(required = false) Boolean isMemberAtAward,
             HttpServletResponse response) throws IOException {
         String csvFileName = "grants.csv";
 
@@ -192,7 +180,7 @@ public class FormController {
                 "exec4Fullname", "exec4Amount", "exec5Fullname", "exec5Amount", "lastModifiedDate", "geocodeCascade"};
 
             csvWriter.writeHeader(header);
-            repo.getGrants(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state, csvWriter, header);
+            repo.getGrants(fiscal_year, subcommittee, agency_name, bureau_name, cfda, state, memberid, congress, isMemberAtAward, csvWriter, header);
         }
     }
 

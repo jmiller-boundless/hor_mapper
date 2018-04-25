@@ -1,15 +1,12 @@
 package gov.hor.approp.model;
 
-import com.bedatadriven.jackson.datatype.jts.serialization.GeometryDeserializer;
-import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.vividsolutions.jts.geom.Geometry;
+import java.util.List;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 
 @Entity
 @Table(name = "member", schema = "members")
@@ -20,7 +17,10 @@ public class Member {
     private String lastname;
     private String firstname;
     private String middlename;
-    private Geometry the_geom;
+
+    @OneToMany(orphanRemoval = true)
+    @JoinColumn(name = "memberid")
+    private List<Term> terms;
 
     public int getId() {
         return id;
@@ -54,15 +54,12 @@ public class Member {
         this.middlename = middlename;
     }
 
-    @JsonSerialize(using = GeometrySerializer.class)
-    public Geometry getThe_geom() {
-        return the_geom;
+    public List<Term> getTerms() {
+        return terms;
     }
 
-    @JsonDeserialize(using = GeometryDeserializer.class)
-    @JsonProperty("geom")
-    public void setThe_geom(Geometry the_geom) {
-        this.the_geom = the_geom;
+    public void setTerms(List<Term> terms) {
+        this.terms = terms;
     }
 
 }
