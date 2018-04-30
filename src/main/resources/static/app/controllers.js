@@ -34,7 +34,7 @@ var DEFAULT_FISCAL_YEAR = [ 2017 ];
         .tap(function (array) {
           var congress = _.get($scope, 'data.congress.congress');
           if ($scope.data.isMemberAtAward && congress) {
-            array.push(`congress:'${congress}'`);
+            array.push("congress:'" + congress + "'");
           }
         })
         .reject(_.isEmpty)
@@ -103,7 +103,7 @@ var DEFAULT_FISCAL_YEAR = [ 2017 ];
         congress: _.get($scope, 'data.congress.congress'),
         isMemberAtAward: $scope.data.isMemberAtAward
       });
-      var base = `/grantmapper-0.1/form/${endpoint}?`;
+      var base = '/grantmapper-0.1/form/' + endpoint + '?';
       return base + getParameters;
     };
 
@@ -133,7 +133,7 @@ var DEFAULT_FISCAL_YEAR = [ 2017 ];
       var list = $scope.data[filter];
       if(!_.isEmpty(list) && !(list.length === 1 && list[0] === ALL_VALUE)) {
         var listData = getListAsViewparamsValue(list, attribute);
-        return `${filter}:${listData}`;
+        return filter + ':' + listData;
       } else {
         return '';
       }
@@ -143,7 +143,7 @@ var DEFAULT_FISCAL_YEAR = [ 2017 ];
       return _.chain(list)
         .map(function (item) {
           var value = (attribute) ? item[attribute] : item;
-          return `'${value}'`;
+          return "'" + value + "'";
         })
         .join('\\,')
         .value();
@@ -157,7 +157,7 @@ var DEFAULT_FISCAL_YEAR = [ 2017 ];
           VERSION: '1.1.1',
           LAYERS: CURRENT_DISTRICTS_LAYER_NAME,
           STYLES: '',
-          viewparams: `fiscal_year:'2017'`
+          viewparams: "fiscal_year:'2017'"
         },
         serverType: 'geoserver',
         crossOrigin: ''

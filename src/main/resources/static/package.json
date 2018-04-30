@@ -20,6 +20,7 @@
     "angular-resource": "^1.6.0",
     "angular-sanitize": "^1.6.0",
     "bootstrap-css-only": "^3.3.7",
+    "es6-object-assign": "^1.1.0",
     "lodash": "^4.17.2",
     "openlayers": "^3.19.1",
     "ui-select": "^0.19.8"

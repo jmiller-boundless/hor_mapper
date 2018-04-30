@@ -174,7 +174,7 @@ public class FormFieldsDAO {
     }
 
     public List<State> getStates() {
-        String query = "select name, stusps, st_envelope(the_geom) as the_geom from tiger.state order by name";
+        String query = "select name, stusps from tiger.state order by name";
         Query q = entityManager.createNativeQuery(query, State.class);
         List<State> states = q.getResultList();
         return states;
